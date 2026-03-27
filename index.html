@@ -3,42 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Farmant Voxel - Ultimate Mobile</title>
+    <title>Farmant Voxel - Official Fan Edition</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #87ceeb; font-family: 'Consolas', monospace; touch-action: none; -webkit-user-select: none; user-select: none; }
         canvas { display: block; }
 
         /* --- UI PANELLERİ --- */
         #ui-left { position: absolute; top: 10px; left: 10px; color: #0f0; background: rgba(0,0,0,0.8); padding: 8px; z-index: 10; border-radius: 5px; font-size: 10px; border-left: 3px solid #0f0; pointer-events: none; }
-        #ui-depth { position: absolute; top: 10px; right: 10px; color: #fff; background: #1a1a1a; padding: 10px; z-index: 10; font-size: 14px; border: 2px solid #555; border-radius: 5px; font-weight: bold; pointer-events: none; }
         
-        #health { position: absolute; bottom: 110px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; z-index: 10; pointer-events: none; }
-        .heart { color: #ff0000; font-size: 18px; text-shadow: 1px 1px #000; }
+        /* SAĞ ÜST FAN YAPIMI YAZISI */
+        #fan-made { position: absolute; top: 15px; right: 15px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 6px 12px; z-index: 10; font-size: 11px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); pointer-events: none; text-transform: uppercase; letter-spacing: 1px; }
 
-        #hotbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; background: rgba(0,0,0,0.8); padding: 8px; border: 2px solid #444; border-radius: 10px; z-index: 110; }
-        .slot { width: 45px; height: 45px; border: 2px solid #888; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; font-size: 8px; text-align: center; border-radius: 5px; background: rgba(255,255,255,0.1); }
-        .slot.selected { border-color: #00ff00; background: rgba(0,255,0,0.3); box-shadow: 0 0 10px #0f0; }
-        .count { position: absolute; bottom: 1px; right: 3px; font-size: 10px; color: #ff0; font-weight: bold; }
+        #health { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; z-index: 10; pointer-events: none; }
+        .heart { color: #ff0000; font-size: 20px; text-shadow: 2px 2px #000; }
+
+        #hotbar { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(0,0,0,0.85); padding: 10px; border: 2px solid #555; border-radius: 12px; z-index: 110; }
+        .slot { width: 48px; height: 48px; border: 2px solid #777; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; font-size: 9px; text-align: center; border-radius: 6px; background: rgba(255,255,255,0.05); }
+        .slot.selected { border-color: #00ff00; background: rgba(0,255,0,0.25); box-shadow: 0 0 12px #0f0; }
+        .count { position: absolute; bottom: 2px; right: 4px; font-size: 11px; color: #ff0; font-weight: bold; }
 
         /* --- MOBİL KONTROLLER --- */
-        #joystick-zone { position: fixed; bottom: 40px; left: 30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); z-index: 100; }
-        #joystick-knob { width: 40px; height: 40px; background: #00ff00; border-radius: 50%; position: absolute; top: 30px; left: 30px; opacity: 0.8; box-shadow: 0 0 10px #0f0; }
+        #joystick-zone { position: fixed; bottom: 45px; left: 35px; width: 110px; height: 110px; background: rgba(255,255,255,0.08); border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); z-index: 100; }
+        #joystick-knob { width: 45px; height: 45px; background: #00ff00; border-radius: 50%; position: absolute; top: 32.5px; left: 32.5px; opacity: 0.7; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
         
-        .action-btns { position: fixed; bottom: 180px; right: 30px; display: flex; flex-direction: column; gap: 20px; z-index: 100; }
-        .act-btn { width: 65px; height: 65px; background: rgba(0,255,0,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; border: 2px solid #0f0; color: white; box-shadow: 0 0 15px rgba(0,255,0,0.4); }
+        .action-btns { position: fixed; bottom: 190px; right: 35px; display: flex; flex-direction: column; gap: 25px; z-index: 100; }
+        .act-btn { width: 70px; height: 70px; background: rgba(0,255,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid #0f0; color: white; box-shadow: 0 0 20px rgba(0,255,0,0.3); }
 
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 16px; height: 16px; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; opacity: 0.7; }
-        #crosshair::before { content: ""; position: absolute; top: 7px; left: 0; width: 16px; height: 2px; background: white; }
-        #crosshair::after { content: ""; position: absolute; left: 7px; top: 0; width: 2px; height: 16px; background: white; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; opacity: 0.8; }
+        #crosshair::before { content: ""; position: absolute; top: 9px; left: 0; width: 20px; height: 2px; background: white; }
+        #crosshair::after { content: ""; position: absolute; left: 9px; top: 0; width: 2px; height: 20px; background: white; }
     </style>
 </head>
 <body>
 
     <div id="ui-left">
-        CHUNK: <span id="chunk-info">0</span><br>
-        X: <span id="pos-x">0</span> Z: <span id="pos-z">0</span>
+        FARMANT STUDIOS OS<br>
+        COORD X: <span id="pos-x">0</span> Z: <span id="pos-z">0</span>
     </div>
-    <div id="ui-depth">DERİNLİK: <span id="depth">100</span></div>
+
+    <div id="fan-made">BU BİR FAN YAPIMI OYUNDUR</div>
     
     <div id="health">
         <span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span>
@@ -52,7 +55,6 @@
     </div>
 
     <div id="crosshair"></div>
-
     <div id="joystick-zone"><div id="joystick-knob"></div></div>
     
     <div class="action-btns">
@@ -63,7 +65,7 @@
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
-        // --- OYUN AYARLARI ---
+        // --- GLOBAL DEĞİŞKENLER ---
         const CHUNK_SIZE = 8;
         const RENDER_DIST = 2; 
         const inventory = { toprak: 10, odun: 0, tas: 0, maden: 0 };
@@ -75,16 +77,18 @@
         let touchLookId = null;
         let lastX, lastY;
 
+        // --- SCENE SETUP ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87ceeb);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
         document.body.appendChild(renderer.domElement);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.7));
         const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(10, 50, 10);
+        sun.position.set(20, 100, 20);
         scene.add(sun);
 
         const geo = new THREE.BoxGeometry(1, 1, 1);
@@ -92,11 +96,10 @@
             grass: new THREE.MeshLambertMaterial({ color: 0x2ecc71 }),
             dirt: new THREE.MeshLambertMaterial({ color: 0x8B4513 }),
             wood: new THREE.MeshLambertMaterial({ color: 0x5d4037 }),
-            leaf: new THREE.MeshLambertMaterial({ color: 0x1b5e20 }),
             stone: new THREE.MeshLambertMaterial({ color: 0x777777 })
         };
 
-        // --- CHUNK VE DÜNYA ÜRETİMİ ---
+        // --- DÜNYA ÜRETİMİ ---
         function createChunk(cx, cz) {
             const group = new THREE.Group();
             for (let x = 0; x < CHUNK_SIZE; x++) {
@@ -108,7 +111,7 @@
                     ground.position.set(wx, 0, wz);
                     group.add(ground);
 
-                    if (Math.random() < 0.04) { // Ağaç Üretimi
+                    if (Math.random() < 0.05) { // Ağaç (Yapraksız Horror Stil)
                         for(let h=1; h<=3; h++) {
                             const t = new THREE.Mesh(geo, mats.wood);
                             t.position.set(wx, h, wz);
@@ -142,28 +145,37 @@
                     chunks.delete(key);
                 }
             }
-            document.getElementById('chunk-info').innerText = chunks.size;
         }
 
-        // --- MOBİL KONTROLLER ---
+        // --- KONTROLLER ---
         const jZone = document.getElementById('joystick-zone');
         const jKnob = document.getElementById('joystick-knob');
+        
         jZone.addEventListener('touchmove', e => {
             const rect = jZone.getBoundingClientRect();
             const t = e.touches[0];
-            let x = t.clientX - rect.left - 50;
-            let y = t.clientY - rect.top - 50;
-            const dist = Math.min(Math.sqrt(x*x + y*y), 40);
+            let x = t.clientX - rect.left - 55;
+            let y = t.clientY - rect.top - 55;
+            const dist = Math.min(Math.sqrt(x*x + y*y), 45);
             const angle = Math.atan2(y, x);
-            moveInput = { x: Math.cos(angle) * (dist/40), y: Math.sin(angle) * (dist/40) };
+            moveInput = { x: Math.cos(angle) * (dist/45), y: Math.sin(angle) * (dist/45) };
             jKnob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
         });
-        jZone.addEventListener('touchend', () => { moveInput = {x:0, y:0}; jKnob.style.transform = "translate(0,0)"; });
+
+        jZone.addEventListener('touchend', () => { 
+            moveInput = {x:0, y:0}; 
+            jKnob.style.transform = "translate(0,0)"; 
+        });
 
         document.addEventListener('touchstart', e => {
             const t = e.changedTouches[0];
-            if(t.clientX > window.innerWidth / 2) { touchLookId = t.identifier; lastX = t.clientX; lastY = t.clientY; }
+            if(t.clientX > window.innerWidth / 2) { 
+                touchLookId = t.identifier; 
+                lastX = t.clientX; 
+                lastY = t.clientY; 
+            }
         });
+
         document.addEventListener('touchmove', e => {
             for(let t of e.touches) {
                 if(t.identifier === touchLookId) {
@@ -175,27 +187,30 @@
             }
         });
 
-        // --- AKSİYONLAR ---
+        // --- ENVANTER VE AKSİYON ---
         window.selectSlot = (i) => {
             selectedSlot = i;
             document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
             document.getElementById('slot-'+i).classList.add('selected');
         };
 
-        document.getElementById('btn-mine').addEventListener('touchstart', () => {
+        document.getElementById('btn-mine').addEventListener('touchstart', (e) => {
+            e.preventDefault();
             const ray = new THREE.Raycaster();
             ray.setFromCamera(new THREE.Vector2(0,0), camera);
             const inter = ray.intersectObjects(hitboxBlocks);
             if(inter.length > 0 && inter[0].distance < 4) {
-                const type = inter[0].object.userData.type;
+                const target = inter[0].object;
+                const type = target.userData.type;
                 if(inventory[type] !== undefined) inventory[type]++;
-                scene.remove(inter[0].object);
-                hitboxBlocks.splice(hitboxBlocks.indexOf(inter[0].object), 1);
+                scene.remove(target);
+                hitboxBlocks.splice(hitboxBlocks.indexOf(target), 1);
                 updateUI();
             }
         });
 
-        document.getElementById('btn-place').addEventListener('touchstart', () => {
+        document.getElementById('btn-place').addEventListener('touchstart', (e) => {
+            e.preventDefault();
             const type = slots[selectedSlot];
             if(inventory[type] <= 0) return;
             const ray = new THREE.Raycaster();
@@ -217,36 +232,46 @@
         });
 
         function updateUI() {
-            slots.forEach((s, i) => document.getElementById('cnt-'+i).innerText = inventory[s]);
+            slots.forEach((s, i) => {
+                document.getElementById('cnt-'+i).innerText = inventory[s];
+            });
         }
 
-        // --- HİTBOX KONTROL ---
-        function checkCollision(pos) {
-            for(let b of hitboxBlocks) {
-                const dx = Math.abs(pos.x - b.position.x);
-                const dz = Math.abs(pos.z - b.position.z);
-                const dy = Math.abs((pos.y-1) - b.position.y);
-                if(dx < 0.7 && dz < 0.7 && dy < 1) return true;
-            }
-            return false;
-        }
-
+        // --- GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
+            
             if(moveInput.x !== 0 || moveInput.y !== 0) {
                 const oldPos = camera.position.clone();
-                camera.translateZ(moveInput.y * 0.15);
-                camera.translateX(moveInput.x * 0.15);
-                if(checkCollision(camera.position)) camera.position.copy(oldPos);
+                camera.translateZ(moveInput.y * 0.16);
+                camera.translateX(moveInput.x * 0.16);
+                
+                // Çarpışma Kontrolü
+                for(let b of hitboxBlocks) {
+                    const dx = Math.abs(camera.position.x - b.position.x);
+                    const dz = Math.abs(camera.position.z - b.position.z);
+                    if(dx < 0.7 && dz < 0.7) camera.position.copy(oldPos);
+                }
             }
-            camera.position.y = 2;
+
+            camera.position.y = 2; // Sabit boy
             updateChunks();
+
             document.getElementById('pos-x').innerText = Math.round(camera.position.x);
             document.getElementById('pos-z').innerText = Math.round(camera.position.z);
+            
             renderer.render(scene, camera);
         }
+
         updateUI();
         animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     </script>
 </body>
 </html>
