@@ -10,7 +10,6 @@
 
         /* --- UI PANELLERİ --- */
         #ui-left { position: absolute; top: 10px; left: 10px; color: #0f0; background: rgba(0,0,0,0.8); padding: 8px; z-index: 10; border-radius: 5px; font-size: 10px; border-left: 3px solid #0f0; pointer-events: none; }
-        
         #fan-made { position: absolute; top: 15px; right: 15px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 6px 12px; z-index: 10; font-size: 11px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); pointer-events: none; text-transform: uppercase; letter-spacing: 1px; }
 
         #health { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; z-index: 10; pointer-events: none; }
@@ -64,6 +63,7 @@
     <script type="module">
         import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
+        // --- GLOBAL DEĞİŞKENLER ---
         const CHUNK_SIZE = 8;
         const RENDER_DIST = 2; 
         const inventory = { toprak: 10, odun: 0, tas: 0, maden: 0 };
@@ -75,6 +75,7 @@
         let touchLookId = null;
         let lastX, lastY;
 
+        // --- SCENE SETUP ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87ceeb);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -97,6 +98,7 @@
             stone: new THREE.MeshLambertMaterial({ color: 0x777777 })
         };
 
+        // --- DÜNYA ÜRETİMİ ---
         function createChunk(cx, cz) {
             const group = new THREE.Group();
             for (let x = 0; x < CHUNK_SIZE; x++) {
@@ -109,7 +111,7 @@
                     group.add(ground);
 
                     if (Math.random() < 0.05) { 
-                        // Gövdeyi oluştur (3 blok yüksekliğinde)
+                        // Ağaç Gövdesi
                         for(let h=1; h<=3; h++) {
                             const t = new THREE.Mesh(geo, mats.wood);
                             t.position.set(wx, h, wz);
@@ -117,10 +119,8 @@
                             group.add(t);
                             hitboxBlocks.push(t);
                         }
-                        // Yaprakları oluştur (Gövdenin en üstüne)
-                        const leafPos = [
-                            [0, 3, 0], [1, 3, 0], [-1, 3, 0], [0, 3, 1], [0, 3, -1], [0, 4, 0]
-                        ];
+                        // YAPRAKLAR (EKLENDİ)
+                        const leafPos = [[0, 3, 0], [1, 3, 0], [-1, 3, 0], [0, 3, 1], [0, 3, -1], [0, 4, 0]];
                         leafPos.forEach(p => {
                             const l = new THREE.Mesh(geo, mats.leaves);
                             l.position.set(wx + p[0], p[1], wz + p[2]);
@@ -156,6 +156,7 @@
             }
         }
 
+        // --- KONTROLLER ---
         const jZone = document.getElementById('joystick-zone');
         const jKnob = document.getElementById('joystick-knob');
         
@@ -195,6 +196,7 @@
             }
         });
 
+        // --- ENVANTER VE AKSİYON ---
         window.selectSlot = (i) => {
             selectedSlot = i;
             document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
@@ -206,7 +208,8 @@
             const ray = new THREE.Raycaster();
             ray.setFromCamera(new THREE.Vector2(0,0), camera);
             const inter = ray.intersectObjects(hitboxBlocks);
-            if(inter.length > 0 && inter[0].distance < 4) {
+            // MESAFE KONTROLÜ (GÜNCELLENDİ: 2 BLOK)
+            if(inter.length > 0 && inter[0].distance < 2) {
                 const target = inter[0].object;
                 const type = target.userData.type;
                 if(inventory[type] !== undefined) inventory[type]++;
@@ -226,7 +229,8 @@
             const allBlocks = []; 
             chunks.forEach(g => allBlocks.push(...g.children));
             const inter = ray.intersectObjects(allBlocks);
-            if(inter.length > 0 && inter[0].distance < 4) {
+            // KOYMA MESAFESİ DE 2 BLOK OLARAK GÜNCELLENDİ
+            if(inter.length > 0 && inter[0].distance < 2) {
                 const p = inter[0].object.position;
                 const n = inter[0].face.normal;
                 const b = new THREE.Mesh(geo, mats.dirt);
@@ -246,6 +250,7 @@
             });
         }
 
+        // --- GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
             
