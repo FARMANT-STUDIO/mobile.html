@@ -3,233 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Farmant Voxel - Horror Mini Mobile</title>
+    <title>HORROR MINI - MOBILE EDITION Alpha 0.03</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #0d0216; font-family: 'Consolas', monospace; color: white; touch-action: none; -webkit-user-select: none; user-select: none; }
-        canvas { display: block; }
-
-        /* --- MOBİL GİRİŞ EKRANI (YIRTIK GÜVERCİN STİLİ) --- */
-        #menu-screen-mobile {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(180deg, #100220 0%, #000 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
-        }
-        #mobile-text { font-size: 1.1rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; font-weight: bold; }
-        #welcome-title { font-size: 1.8rem; color: #bc13fe; font-weight: bold; text-shadow: 0 0 15px #bc13fe; margin-bottom: 5px; }
-        #welcome-sub { font-size: 1.3rem; color: #ff0; font-weight: bold; margin-bottom: 40px; }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Courier New', monospace; touch-action: none; }
         
-        .mobile-btn {
-            width: 85%; max-width: 280px; padding: 18px; font-size: 1.3rem; font-weight: bold;
-            border-radius: 15px; margin-bottom: 20px; border: none; cursor: pointer; transition: 0.3s;
+        /* Giriş Menüsü */
+        #ui-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.95); z-index: 100;
         }
-        .btn-indir { background: #333; color: #777; border: 2px solid #444; }
-        .btn-oyna { background: #bc13fe; color: white; box-shadow: 0 0 25px rgba(188, 19, 254, 0.5); }
-        .btn-oyna:active { transform: scale(0.95); background: #e044ff; }
+        #logo { color: #ff0000; font-size: 30px; font-weight: bold; text-align: center; text-shadow: 2px 2px #000; line-height: 1.1; }
+        .menu-btn { background: #eee; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 30px; border-radius: 5px; }
 
-        /* --- OYUN İÇİ UI --- */
-        #ui-info { position: absolute; top: 15px; left: 15px; color: #0f0; background: rgba(0,0,0,0.7); padding: 8px 12px; z-index: 10; font-size: 12px; display: none; border-left: 4px solid #0f0; border-radius: 4px; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; display: none; }
-        #crosshair:before, #crosshair:after { content: ""; position: absolute; background: rgba(255,255,255,0.9); }
-        #crosshair:before { top: 9px; left: 0; width: 20px; height: 2px; }
-        #crosshair:after { left: 9px; top: 0; width: 2px; height: 20px; }
-
-        /* --- MOBİL KONTROLLER (JOYSTICK VE BUTONLAR) --- */
-        #mobile-controls { position: fixed; bottom: 40px; width: 100%; display: none; justify-content: space-between; padding: 0 30px; box-sizing: border-box; z-index: 100; pointer-events: none; }
-        #joystick-zone { width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); position: relative; pointer-events: auto; }
-        #joystick-knob { width: 50px; height: 50px; background: #bc13fe; border-radius: 50%; position: absolute; top: 35px; left: 35px; opacity: 0.8; box-shadow: 0 0 15px #bc13fe; }
+        /* Mobil Kontroller */
+        #controls { display: none; }
         
-        .action-btns { display: flex; flex-direction: column; gap: 20px; pointer-events: auto; }
-        .act-btn { width: 70px; height: 70px; background: rgba(188, 19, 254, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid #bc13fe; box-shadow: 0 0 20px rgba(188, 19, 254, 0.3); }
-        .act-btn:active { transform: scale(0.85); background: rgba(188, 19, 254, 0.6); }
+        /* Sol Hareket Butonları */
+        .joystick { position: absolute; bottom: 40px; left: 20px; display: grid; grid-template-columns: repeat(3, 65px); grid-template-rows: repeat(2, 65px); gap: 8px; z-index: 50; }
+        
+        /* Sağ Aksiyon Butonları */
+        .actions { position: absolute; bottom: 40px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 50; }
+
+        .btn { 
+            width: 65px; height: 65px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); 
+            color: white; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; user-select: none; -webkit-user-select: none; font-size: 20px;
+        }
+        .btn:active { background: rgba(255,255,255,0.4); }
+        
+        .action-btn { width: 85px; height: 85px; border-radius: 50%; font-size: 16px; border: 3px solid #fff; }
+        #btn-kaz { background: rgba(255, 0, 0, 0.4); }
+        #btn-koy { background: rgba(0, 255, 0, 0.4); }
+
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
+            border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 40; mix-blend-mode: difference;
+        }
     </style>
 </head>
 <body>
 
-    <div id="menu-screen-mobile">
-        <div id="mobile-text">
-            ARTIK HIZLI VE MOBİLLİ YIRTIK BİR GÜVERCİN MÜKEMMEL<br>
-            AYNI PC Sİ OLMAYANLAR GİBİ. LAFI UZATMAYALIM...
+    <div id="ui-overlay">
+        <div id="logo">
+            HORROR MINI<br>
+            <span style="font-size: 18px; color: #fff;">MOBILE EDITION</span><br>
+            <span style="font-size: 14px; color: #aaa;">Alpha 0.03</span>
         </div>
-        <div id="welcome-title">HORROR MİNİ MOBİLE SÜRÜMÜNE HOŞ GELDİNİZ</div>
-        <div id="welcome-sub">sefalar getirdiniz</div>
-        
-        <button class="mobile-btn btn-indir" onclick="alert('Yakında Google Play\'de!')">📥 İNDİR</button>
-        <button class="mobile-btn btn-oyna" onclick="startMobile()">🕹️ OYUNA BAŞLA</button>
+        <button class="menu-btn" onclick="startGame()">TEK OYUNCULU</button>
     </div>
 
-    <div id="ui-info">FPS: <span id="fps">0</span> | X: <span id="pos-x">0</span> | Z: <span id="pos-z">0</span></div>
-    <div id="crosshair"></div>
-
-    <div id="mobile-controls">
-        <div id="joystick-zone"><div id="joystick-knob"></div></div>
-        <div class="action-btns">
-            <div class="act-btn" onclick="placeBlock()">🧱</div>
-            <div class="act-btn" onclick="mineBlock()">⛏️</div>
+    <div id="controls">
+        <div class="joystick">
+            <div></div><div class="btn" id="m-up">▲</div><div></div>
+            <div class="btn" id="m-left">◀</div><div class="btn" id="m-down">▼</div><div class="btn" id="m-right">▶</div>
         </div>
+        <div class="actions">
+            <div class="btn action-btn" id="btn-kaz">KAZ</div>
+            <div class="btn action-btn" id="btn-koy">KOY</div>
+        </div>
+        <div id="crosshair"></div>
     </div>
 
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-        let isGameRunning = false;
-        let joystickInput = { x: 0, y: 0 };
-        let touchLookId = null;
-        let lastTouchX, lastTouchY;
+    <script>
+        let scene, camera, renderer, stalker;
+        let isGameStarted = false;
+        let move = { f: false, b: false, l: false, r: false };
+        let lastTouchX = 0, lastTouchY = 0;
+        let chunks = {};
+        const CHUNK_SIZE = 8;
 
-        // --- OYUNU BAŞLAT ---
-        window.startMobile = function() {
-            document.getElementById('menu-screen-mobile').style.display = 'none';
-            document.getElementById('mobile-controls').style.display = 'flex';
-            document.getElementById('ui-info').style.display = 'block';
-            document.getElementById('crosshair').style.display = 'block';
-            isGameRunning = true;
-            setupControls();
+        const mats = {
+            grass: new THREE.MeshStandardMaterial({ color: 0x567d46 }),
+            dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
+            stone: new THREE.MeshStandardMaterial({ color: 0x777777 }),
+            trunk: new THREE.MeshStandardMaterial({ color: 0x4d2926 }),
+            leaves: new THREE.MeshStandardMaterial({ color: 0x228B22 }),
+            stalker: new THREE.MeshBasicMaterial({ color: 0xffffff })
         };
 
-        // --- ÜÇ BOYUTLU DÜNYA KURULUMU ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Gökyüzü Mavisi
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 10, 45);
 
-        const light = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(light);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 12, 0);
 
-        const blocks = [];
-        const geo = new THREE.BoxGeometry(1, 1, 1);
-        const mats = { 
-            grass: new THREE.MeshLambertMaterial({ color: 0x2ecc71 }),
-            wood: new THREE.MeshLambertMaterial({ color: 0x5d4037 }),
-            leaf: new THREE.MeshLambertMaterial({ color: 0x1b5e20 }),
-            dirt: new THREE.MeshLambertMaterial({ color: 0x8B4513 })
-        };
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
 
-        function addBlock(x,y,z,mat) {
-            const b = new THREE.Mesh(geo, mat); 
-            b.position.set(Math.round(x), Math.round(y), Math.round(z));
-            scene.add(b); 
-            blocks.push(b);
-            return b;
+            const light = new THREE.DirectionalLight(0xffffff, 1.2);
+            light.position.set(5, 20, 5);
+            scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
+
+            stalker = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2, 0.6), mats.stalker);
+            stalker.position.set(15, 10, 15);
+            scene.add(stalker);
+
+            setupMobileControls();
+            generateInitialWorld();
         }
 
-        // --- DÜNYA GENERATÖRÜ (AĞAÇLAR DAHİL) ---
-        for(let x=-10; x<10; x++) {
-            for(let z=-10; z<10; z++) {
-                addBlock(x, 0, z, mats.grass); // Yerler çimen
-                if(Math.random() < 0.03 && (x > 2 || x < -2)) { // Rastgele ağaçlar
-                    for(let i=1; i<4; i++) addBlock(x, i, z, mats.wood);
-                    for(let lx=-1; lx<=1; lx++) for(let lz=-1; lz<=1; lz++) addBlock(x+lx, 4, z+lz, mats.leaf);
+        function setupMobileControls() {
+            const bind = (id, key) => {
+                const el = document.getElementById(id);
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); move[key] = true; });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); move[key] = false; });
+            };
+            bind('m-up', 'f'); bind('m-down', 'b'); bind('m-left', 'l'); bind('m-right', 'r');
+
+            document.getElementById('btn-kaz').addEventListener('touchstart', (e) => { e.preventDefault(); breakBlock(); });
+            document.getElementById('btn-koy').addEventListener('touchstart', (e) => { e.preventDefault(); placeBlock(); });
+
+            window.addEventListener('touchmove', (e) => {
+                if(!isGameStarted) return;
+                let touch = e.touches[0];
+                if(touch.clientX > window.innerWidth / 2) {
+                    if(lastTouchX !== 0) {
+                        camera.rotation.y -= (touch.clientX - lastTouchX) * 0.006;
+                        camera.rotation.x -= (touch.clientY - lastTouchY) * 0.006;
+                        camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                    }
+                    lastTouchX = touch.clientX;
+                    lastTouchY = touch.clientY;
+                }
+            });
+            window.addEventListener('touchend', () => { lastTouchX = 0; lastTouchY = 0; });
+        }
+
+        function generateInitialWorld() {
+            for(let x = -2; x <= 2; x++) {
+                for(let z = -2; z <= 2; z++) {
+                    createChunk(x, z);
                 }
             }
         }
 
-        camera.position.set(0, 2, 5);
-
-        // --- MOBİL DOKUNMATİK SİSTEMİ (JOYSTICK + SÜRÜKLEME) ---
-        function setupControls() {
-            const zone = document.getElementById('joystick-zone');
-            const knob = document.getElementById('joystick-knob');
-
-            // 1. Sol: Joystick (Yürüme)
-            zone.addEventListener('touchstart', e => { e.preventDefault(); }, {passive: false});
-            zone.addEventListener('touchmove', e => {
-                e.preventDefault();
-                const rect = zone.getBoundingClientRect();
-                const t = e.touches[0];
-                let x = t.clientX - rect.left - 60;
-                let y = t.clientY - rect.top - 60;
-                const dist = Math.sqrt(x*x + y*y);
-                const limit = 40;
-                if(dist > limit) { x *= limit/dist; y *= limit/dist; }
-                knob.style.transform = `translate(${x}px, ${y}px)`;
-                joystickInput.x = x/limit; 
-                joystickInput.y = y/limit;
-            }, {passive: false});
-            zone.addEventListener('touchend', () => { 
-                knob.style.transform = 'translate(0,0)'; 
-                joystickInput = {x:0, y:0}; 
-            });
-
-            // 2. Sağ: Ekran Sürükleme (Etrafa Bakma)
-            document.addEventListener('touchstart', e => {
-                const t = e.changedTouches[0];
-                if(t.clientX > window.innerWidth / 2) {
-                    touchLookId = t.identifier;
-                    lastTouchX = t.clientX;
-                    lastTouchY = t.clientY;
-                }
-            });
-            document.addEventListener('touchmove', e => {
-                for(let i=0; i<e.touches.length; i++) {
-                    const t = e.touches[i];
-                    if(t.identifier === touchLookId) {
-                        const dx = t.clientX - lastTouchX;
-                        const dy = t.clientY - lastTouchY;
-                        camera.rotation.y -= dx * 0.006;
-                        camera.rotation.x -= dy * 0.006;
-                        camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x));
-                        lastTouchX = t.clientX;
-                        lastTouchY = t.clientY;
+        function createChunk(cx, cz) {
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            for (let x = 0; x < CHUNK_SIZE; x++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    const wX = cx * CHUNK_SIZE + x;
+                    const wZ = cz * CHUNK_SIZE + z;
+                    let h = Math.floor(Math.sin(wX * 0.1) * Math.cos(wZ * 0.1) * 3 + 5);
+                    for (let y = 0; y <= h; y++) {
+                        const mat = (y === h) ? mats.grass : (y > h - 2 ? mats.dirt : mats.stone);
+                        const b = new THREE.Mesh(geo, mat);
+                        b.position.set(wX, y, wZ);
+                        scene.add(b);
+                    }
+                    if (h >= 5 && Math.random() < 0.03) {
+                        for(let t=1; t<=3; t++) {
+                            const tr = new THREE.Mesh(geo, mats.trunk);
+                            tr.position.set(wX, h+t, wZ);
+                            scene.add(tr);
+                        }
                     }
                 }
-            }, {passive: false});
+            }
         }
 
-        // --- BLOK ETKİLEŞİMLERİ ---
-        window.mineBlock = function() {
+        function breakBlock() {
             const ray = new THREE.Raycaster();
-            ray.setFromCamera(new THREE.Vector2(0,0), camera);
-            const inter = ray.intersectObjects(blocks);
-            if(inter.length > 0 && inter[0].distance < 5) {
-                scene.remove(inter[0].object);
-                blocks.splice(blocks.indexOf(inter[0].object), 1);
+            ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const hits = ray.intersectObjects(scene.children);
+            if (hits.length > 0 && hits[0].distance < 5 && hits[0].object !== stalker) {
+                scene.remove(hits[0].object);
             }
-        };
+        }
 
-        window.placeBlock = function() {
+        function placeBlock() {
             const ray = new THREE.Raycaster();
-            ray.setFromCamera(new THREE.Vector2(0,0), camera);
-            const inter = ray.intersectObjects(blocks);
-            if(inter.length > 0 && inter[0].distance < 5) {
-                const pos = inter[0].object.position;
-                const norm = inter[0].face.normal;
-                addBlock(pos.x + norm.x, pos.y + norm.y, pos.z + norm.z, mats.dirt);
+            ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const hits = ray.intersectObjects(scene.children);
+            if (hits.length > 0 && hits[0].distance < 5) {
+                const b = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mats.stone);
+                b.position.copy(hits[0].object.position).add(hits[0].face.normal);
+                scene.add(b);
             }
-        };
+        }
 
-        // --- OYUN DÖNGÜSÜ (ANIMATION) ---
-        let frames = 0, lastTime = performance.now();
+        function startGame() {
+            isGameStarted = true;
+            document.getElementById('ui-overlay').style.display = 'none';
+            document.getElementById('controls').style.display = 'block';
+        }
+
         function animate() {
             requestAnimationFrame(animate);
-            if(isGameRunning) {
-                // Hareket Hızı
-                camera.translateZ(joystickInput.y * 0.15);
-                camera.translateX(joystickInput.x * 0.15);
-                camera.position.y = 2; // Sabit boy seviyesi
-
-                // UI Güncelleme
-                frames++;
-                const now = performance.now();
-                if(now > lastTime + 1000) {
-                    document.getElementById('fps').innerText = frames;
-                    frames = 0; lastTime = now;
-                }
-                document.getElementById('pos-x').innerText = Math.round(camera.position.x);
-                document.getElementById('pos-z').innerText = Math.round(camera.position.z);
+            if(isGameStarted) {
+                const s = 0.12;
+                if (move.f) camera.translateZ(-s);
+                if (move.b) camera.translateZ(s);
+                if (move.l) camera.translateX(-s);
+                if (move.r) camera.translateX(s);
+                
+                stalker.lookAt(camera.position);
+                
+                // Basit Yerçekimi
+                const ray = new THREE.Raycaster(camera.position, new THREE.Vector3(0, -1, 0));
+                const hit = ray.intersectObjects(scene.children);
+                if (hit.length > 0 && hit[0].distance < 1.7) {
+                    camera.position.y = hit[0].point.y + 1.7;
+                } else { camera.position.y -= 0.05; }
             }
             renderer.render(scene, camera);
         }
-        animate();
 
-        // Pencere Boyutu Değişirse Düzenle
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        init();
+        animate();
     </script>
 </body>
 </html>
