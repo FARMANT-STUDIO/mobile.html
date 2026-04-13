@@ -3,286 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Farmant Voxel - Official Fan Edition</title>
+    <title>HORROR MINI - MOBILE EDITION Alpha 0.03</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #87ceeb; font-family: 'Consolas', monospace; touch-action: none; -webkit-user-select: none; user-select: none; }
-        canvas { display: block; }
-
-        /* --- UI PANELLERİ --- */
-        #ui-left { position: absolute; top: 10px; left: 10px; color: #0f0; background: rgba(0,0,0,0.8); padding: 8px; z-index: 10; border-radius: 5px; font-size: 10px; border-left: 3px solid #0f0; pointer-events: none; }
-        #fan-made { position: absolute; top: 15px; right: 15px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.5); padding: 6px 12px; z-index: 10; font-size: 11px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); pointer-events: none; text-transform: uppercase; letter-spacing: 1px; }
-
-        #health { position: absolute; bottom: 120px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px; z-index: 10; pointer-events: none; }
-        .heart { color: #ff0000; font-size: 20px; text-shadow: 2px 2px #000; }
-
-        #hotbar { position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; background: rgba(0,0,0,0.85); padding: 10px; border: 2px solid #555; border-radius: 12px; z-index: 110; }
-        .slot { width: 48px; height: 48px; border: 2px solid #777; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; position: relative; font-size: 9px; text-align: center; border-radius: 6px; background: rgba(255,255,255,0.05); }
-        .slot.selected { border-color: #00ff00; background: rgba(0,255,0,0.25); box-shadow: 0 0 12px #0f0; }
-        .count { position: absolute; bottom: 2px; right: 4px; font-size: 11px; color: #ff0; font-weight: bold; }
-
-        /* --- MOBİL KONTROLLER --- */
-        #joystick-zone { position: fixed; bottom: 45px; left: 35px; width: 110px; height: 110px; background: rgba(255,255,255,0.08); border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); z-index: 100; }
-        #joystick-knob { width: 45px; height: 45px; background: #00ff00; border-radius: 50%; position: absolute; top: 32.5px; left: 32.5px; opacity: 0.7; box-shadow: 0 0 15px rgba(0,255,0,0.5); }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Courier New', monospace; touch-action: none; }
         
-        .action-btns { position: fixed; bottom: 190px; right: 35px; display: flex; flex-direction: column; gap: 25px; z-index: 100; }
-        .act-btn { width: 70px; height: 70px; background: rgba(0,255,0,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; border: 2px solid #0f0; color: white; box-shadow: 0 0 20px rgba(0,255,0,0.3); }
+        /* Giriş Menüsü */
+        #ui-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.95); z-index: 100;
+        }
+        #logo { color: #ff0000; font-size: 30px; font-weight: bold; text-align: center; text-shadow: 2px 2px #000; line-height: 1.1; }
+        .menu-btn { background: #eee; border: none; padding: 20px 40px; font-size: 20px; font-weight: bold; cursor: pointer; margin-top: 30px; border-radius: 5px; }
 
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; opacity: 0.8; }
-        #crosshair::before { content: ""; position: absolute; top: 9px; left: 0; width: 20px; height: 2px; background: white; }
-        #crosshair::after { content: ""; position: absolute; left: 9px; top: 0; width: 2px; height: 20px; background: white; }
+        /* Mobil Kontroller */
+        #controls { display: none; }
+        
+        /* Sol Hareket Butonları */
+        .joystick { position: absolute; bottom: 40px; left: 20px; display: grid; grid-template-columns: repeat(3, 65px); grid-template-rows: repeat(2, 65px); gap: 8px; z-index: 50; }
+        
+        /* Sağ Aksiyon Butonları */
+        .actions { position: absolute; bottom: 40px; right: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 50; }
+
+        .btn { 
+            width: 65px; height: 65px; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.5); 
+            color: white; font-weight: bold; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; user-select: none; -webkit-user-select: none; font-size: 20px;
+        }
+        .btn:active { background: rgba(255,255,255,0.4); }
+        
+        .action-btn { width: 85px; height: 85px; border-radius: 50%; font-size: 16px; border: 3px solid #fff; }
+        #btn-kaz { background: rgba(255, 0, 0, 0.4); }
+        #btn-koy { background: rgba(0, 255, 0, 0.4); }
+
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
+            border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 40; mix-blend-mode: difference;
+        }
     </style>
 </head>
 <body>
 
-    <div id="ui-left">
-        FARMANT STUDIOS OS<br>
-        COORD X: <span id="pos-x">0</span> Z: <span id="pos-z">0</span>
+    <div id="ui-overlay">
+        <div id="logo">
+            HORROR MINI<br>
+            <span style="font-size: 18px; color: #fff;">MOBILE EDITION</span><br>
+            <span style="font-size: 14px; color: #aaa;">Alpha 0.03</span>
+        </div>
+        <button class="menu-btn" onclick="startGame()">TEK OYUNCULU</button>
     </div>
 
-    <div id="fan-made">BU BİR FAN YAPIMI OYUNDUR</div>
-    
-    <div id="health">
-        <span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span><span class="heart">❤</span>
+    <div id="controls">
+        <div class="joystick">
+            <div></div><div class="btn" id="m-up">▲</div><div></div>
+            <div class="btn" id="m-left">◀</div><div class="btn" id="m-down">▼</div><div class="btn" id="m-right">▶</div>
+        </div>
+        <div class="actions">
+            <div class="btn action-btn" id="btn-kaz">KAZ</div>
+            <div class="btn action-btn" id="btn-koy">KOY</div>
+        </div>
+        <div id="crosshair"></div>
     </div>
 
-    <div id="hotbar">
-        <div id="slot-0" class="slot selected" onclick="selectSlot(0)">Toprak<div class="count" id="cnt-0">10</div></div>
-        <div id="slot-1" class="slot" onclick="selectSlot(1)">Odun<div class="count" id="cnt-1">0</div></div>
-        <div id="slot-2" class="slot" onclick="selectSlot(2)">Taş<div class="count" id="cnt-2">0</div></div>
-        <div id="slot-3" class="slot" onclick="selectSlot(3)">Maden<div class="count" id="cnt-3">0</div></div>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <div id="crosshair"></div>
-    <div id="joystick-zone"><div id="joystick-knob"></div></div>
-    
-    <div class="action-btns">
-        <div class="act-btn" id="btn-place">🧱</div>
-        <div class="act-btn" id="btn-mine">⛏️</div>
-    </div>
-
-    <script type="module">
-        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
-
-        // --- GLOBAL DEĞİŞKENLER ---
+    <script>
+        let scene, camera, renderer, stalker;
+        let isGameStarted = false;
+        let move = { f: false, b: false, l: false, r: false };
+        let lastTouchX = 0, lastTouchY = 0;
+        let chunks = {};
         const CHUNK_SIZE = 8;
-        const RENDER_DIST = 2; 
-        const inventory = { toprak: 10, odun: 0, tas: 0, maden: 0 };
-        const slots = ["toprak", "odun", "tas", "maden"];
-        let selectedSlot = 0;
-        const chunks = new Map();
-        const hitboxBlocks = [];
-        let moveInput = { x: 0, y: 0 };
-        let touchLookId = null;
-        let lastX, lastY;
 
-        // --- SCENE SETUP ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(20, 100, 20);
-        scene.add(sun);
-
-        const geo = new THREE.BoxGeometry(1, 1, 1);
         const mats = {
-            grass: new THREE.MeshLambertMaterial({ color: 0x2ecc71 }),
-            dirt: new THREE.MeshLambertMaterial({ color: 0x8B4513 }),
-            wood: new THREE.MeshLambertMaterial({ color: 0x5d4037 }),
-            leaves: new THREE.MeshLambertMaterial({ color: 0x1a5c1a }), // Koyu yeşil yapraklar
-            stone: new THREE.MeshLambertMaterial({ color: 0x777777 })
+            grass: new THREE.MeshStandardMaterial({ color: 0x567d46 }),
+            dirt: new THREE.MeshStandardMaterial({ color: 0x8b4513 }),
+            stone: new THREE.MeshStandardMaterial({ color: 0x777777 }),
+            trunk: new THREE.MeshStandardMaterial({ color: 0x4d2926 }),
+            leaves: new THREE.MeshStandardMaterial({ color: 0x228B22 }),
+            stalker: new THREE.MeshBasicMaterial({ color: 0xffffff })
         };
 
-        // --- DÜNYA ÜRETİMİ ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 10, 45);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 12, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: false });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            document.body.appendChild(renderer.domElement);
+
+            const light = new THREE.DirectionalLight(0xffffff, 1.2);
+            light.position.set(5, 20, 5);
+            scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
+
+            stalker = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2, 0.6), mats.stalker);
+            stalker.position.set(15, 10, 15);
+            scene.add(stalker);
+
+            setupMobileControls();
+            generateInitialWorld();
+        }
+
+        function setupMobileControls() {
+            const bind = (id, key) => {
+                const el = document.getElementById(id);
+                el.addEventListener('touchstart', (e) => { e.preventDefault(); move[key] = true; });
+                el.addEventListener('touchend', (e) => { e.preventDefault(); move[key] = false; });
+            };
+            bind('m-up', 'f'); bind('m-down', 'b'); bind('m-left', 'l'); bind('m-right', 'r');
+
+            document.getElementById('btn-kaz').addEventListener('touchstart', (e) => { e.preventDefault(); breakBlock(); });
+            document.getElementById('btn-koy').addEventListener('touchstart', (e) => { e.preventDefault(); placeBlock(); });
+
+            window.addEventListener('touchmove', (e) => {
+                if(!isGameStarted) return;
+                let touch = e.touches[0];
+                if(touch.clientX > window.innerWidth / 2) {
+                    if(lastTouchX !== 0) {
+                        camera.rotation.y -= (touch.clientX - lastTouchX) * 0.006;
+                        camera.rotation.x -= (touch.clientY - lastTouchY) * 0.006;
+                        camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
+                    }
+                    lastTouchX = touch.clientX;
+                    lastTouchY = touch.clientY;
+                }
+            });
+            window.addEventListener('touchend', () => { lastTouchX = 0; lastTouchY = 0; });
+        }
+
+        function generateInitialWorld() {
+            for(let x = -2; x <= 2; x++) {
+                for(let z = -2; z <= 2; z++) {
+                    createChunk(x, z);
+                }
+            }
+        }
+
         function createChunk(cx, cz) {
-            const group = new THREE.Group();
+            const geo = new THREE.BoxGeometry(1, 1, 1);
             for (let x = 0; x < CHUNK_SIZE; x++) {
                 for (let z = 0; z < CHUNK_SIZE; z++) {
-                    const wx = cx * CHUNK_SIZE + x;
-                    const wz = cz * CHUNK_SIZE + z;
-                    
-                    const ground = new THREE.Mesh(geo, mats.grass);
-                    ground.position.set(wx, 0, wz);
-                    group.add(ground);
-
-                    if (Math.random() < 0.05) { 
-                        // Ağaç Gövdesi
-                        for(let h=1; h<=3; h++) {
-                            const t = new THREE.Mesh(geo, mats.wood);
-                            t.position.set(wx, h, wz);
-                            t.userData = { type: 'odun', isSolid: true };
-                            group.add(t);
-                            hitboxBlocks.push(t);
+                    const wX = cx * CHUNK_SIZE + x;
+                    const wZ = cz * CHUNK_SIZE + z;
+                    let h = Math.floor(Math.sin(wX * 0.1) * Math.cos(wZ * 0.1) * 3 + 5);
+                    for (let y = 0; y <= h; y++) {
+                        const mat = (y === h) ? mats.grass : (y > h - 2 ? mats.dirt : mats.stone);
+                        const b = new THREE.Mesh(geo, mat);
+                        b.position.set(wX, y, wZ);
+                        scene.add(b);
+                    }
+                    if (h >= 5 && Math.random() < 0.03) {
+                        for(let t=1; t<=3; t++) {
+                            const tr = new THREE.Mesh(geo, mats.trunk);
+                            tr.position.set(wX, h+t, wZ);
+                            scene.add(tr);
                         }
-                        // YAPRAKLAR (EKLENDİ)
-                        const leafPos = [[0, 3, 0], [1, 3, 0], [-1, 3, 0], [0, 3, 1], [0, 3, -1], [0, 4, 0]];
-                        leafPos.forEach(p => {
-                            const l = new THREE.Mesh(geo, mats.leaves);
-                            l.position.set(wx + p[0], p[1], wz + p[2]);
-                            l.userData = { type: 'yaprak', isSolid: true };
-                            group.add(l);
-                            hitboxBlocks.push(l);
-                        });
                     }
                 }
             }
-            scene.add(group);
-            return group;
         }
 
-        function updateChunks() {
-            const pCX = Math.floor(camera.position.x / CHUNK_SIZE);
-            const pCZ = Math.floor(camera.position.z / CHUNK_SIZE);
-
-            for (let x = pCX - RENDER_DIST; x <= pCX + RENDER_DIST; x++) {
-                for (let z = pCZ - RENDER_DIST; z <= pCZ + RENDER_DIST; z++) {
-                    const key = `${x},${z}`;
-                    if (!chunks.has(key)) chunks.set(key, createChunk(x, z));
-                }
-            }
-
-            for (const [key, group] of chunks) {
-                const [cx, cz] = key.split(',').map(Number);
-                if (Math.abs(cx - pCX) > RENDER_DIST + 1 || Math.abs(cz - pCZ) > RENDER_DIST + 1) {
-                    scene.remove(group);
-                    group.children.forEach(c => { if(c.userData.isSolid) hitboxBlocks.splice(hitboxBlocks.indexOf(c), 1); });
-                    chunks.delete(key);
-                }
+        function breakBlock() {
+            const ray = new THREE.Raycaster();
+            ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const hits = ray.intersectObjects(scene.children);
+            if (hits.length > 0 && hits[0].distance < 5 && hits[0].object !== stalker) {
+                scene.remove(hits[0].object);
             }
         }
 
-        // --- KONTROLLER ---
-        const jZone = document.getElementById('joystick-zone');
-        const jKnob = document.getElementById('joystick-knob');
-        
-        jZone.addEventListener('touchmove', e => {
-            const rect = jZone.getBoundingClientRect();
-            const t = e.touches[0];
-            let x = t.clientX - rect.left - 55;
-            let y = t.clientY - rect.top - 55;
-            const dist = Math.min(Math.sqrt(x*x + y*y), 45);
-            const angle = Math.atan2(y, x);
-            moveInput = { x: Math.cos(angle) * (dist/45), y: Math.sin(angle) * (dist/45) };
-            jKnob.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px)`;
-        });
-
-        jZone.addEventListener('touchend', () => { 
-            moveInput = {x:0, y:0}; 
-            jKnob.style.transform = "translate(0,0)"; 
-        });
-
-        document.addEventListener('touchstart', e => {
-            const t = e.changedTouches[0];
-            if(t.clientX > window.innerWidth / 2) { 
-                touchLookId = t.identifier; 
-                lastX = t.clientX; 
-                lastY = t.clientY; 
-            }
-        });
-
-        document.addEventListener('touchmove', e => {
-            for(let t of e.touches) {
-                if(t.identifier === touchLookId) {
-                    camera.rotation.y -= (t.clientX - lastX) * 0.007;
-                    camera.rotation.x -= (t.clientY - lastY) * 0.007;
-                    camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x));
-                    lastX = t.clientX; lastY = t.clientY;
-                }
-            }
-        });
-
-        // --- ENVANTER VE AKSİYON ---
-        window.selectSlot = (i) => {
-            selectedSlot = i;
-            document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-            document.getElementById('slot-'+i).classList.add('selected');
-        };
-
-        document.getElementById('btn-mine').addEventListener('touchstart', (e) => {
-            e.preventDefault();
+        function placeBlock() {
             const ray = new THREE.Raycaster();
-            ray.setFromCamera(new THREE.Vector2(0,0), camera);
-            const inter = ray.intersectObjects(hitboxBlocks);
-            // MESAFE KONTROLÜ (GÜNCELLENDİ: 2 BLOK)
-            if(inter.length > 0 && inter[0].distance < 2) {
-                const target = inter[0].object;
-                const type = target.userData.type;
-                if(inventory[type] !== undefined) inventory[type]++;
-                scene.remove(target);
-                const idx = hitboxBlocks.indexOf(target);
-                if(idx > -1) hitboxBlocks.splice(idx, 1);
-                updateUI();
-            }
-        });
-
-        document.getElementById('btn-place').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            const type = slots[selectedSlot];
-            if(inventory[type] <= 0) return;
-            const ray = new THREE.Raycaster();
-            ray.setFromCamera(new THREE.Vector2(0,0), camera);
-            const allBlocks = []; 
-            chunks.forEach(g => allBlocks.push(...g.children));
-            const inter = ray.intersectObjects(allBlocks);
-            // KOYMA MESAFESİ DE 2 BLOK OLARAK GÜNCELLENDİ
-            if(inter.length > 0 && inter[0].distance < 2) {
-                const p = inter[0].object.position;
-                const n = inter[0].face.normal;
-                const b = new THREE.Mesh(geo, mats.dirt);
-                b.position.set(p.x+n.x, p.y+n.y, p.z+n.z);
-                b.userData = { type: type, isSolid: true };
+            ray.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const hits = ray.intersectObjects(scene.children);
+            if (hits.length > 0 && hits[0].distance < 5) {
+                const b = new THREE.Mesh(new THREE.BoxGeometry(1,1,1), mats.stone);
+                b.position.copy(hits[0].object.position).add(hits[0].face.normal);
                 scene.add(b);
-                hitboxBlocks.push(b);
-                inventory[type]--;
-                updateUI();
             }
-        });
-
-        function updateUI() {
-            slots.forEach((s, i) => {
-                const countElem = document.getElementById('cnt-'+i);
-                if(countElem) countElem.innerText = inventory[s] || 0;
-            });
         }
 
-        // --- GAME LOOP ---
+        function startGame() {
+            isGameStarted = true;
+            document.getElementById('ui-overlay').style.display = 'none';
+            document.getElementById('controls').style.display = 'block';
+        }
+
         function animate() {
             requestAnimationFrame(animate);
-            
-            if(moveInput.x !== 0 || moveInput.y !== 0) {
-                const oldPos = camera.position.clone();
-                camera.translateZ(moveInput.y * 0.16);
-                camera.translateX(moveInput.x * 0.16);
+            if(isGameStarted) {
+                const s = 0.12;
+                if (move.f) camera.translateZ(-s);
+                if (move.b) camera.translateZ(s);
+                if (move.l) camera.translateX(-s);
+                if (move.r) camera.translateX(s);
                 
-                for(let b of hitboxBlocks) {
-                    const dx = Math.abs(camera.position.x - b.position.x);
-                    const dz = Math.abs(camera.position.z - b.position.z);
-                    if(dx < 0.7 && dz < 0.7) camera.position.copy(oldPos);
-                }
+                stalker.lookAt(camera.position);
+                
+                // Basit Yerçekimi
+                const ray = new THREE.Raycaster(camera.position, new THREE.Vector3(0, -1, 0));
+                const hit = ray.intersectObjects(scene.children);
+                if (hit.length > 0 && hit[0].distance < 1.7) {
+                    camera.position.y = hit[0].point.y + 1.7;
+                } else { camera.position.y -= 0.05; }
             }
-
-            camera.position.y = 2; 
-            updateChunks();
-
-            document.getElementById('pos-x').innerText = Math.round(camera.position.x);
-            document.getElementById('pos-z').innerText = Math.round(camera.position.z);
-            
             renderer.render(scene, camera);
         }
 
-        updateUI();
+        init();
         animate();
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
     </script>
 </body>
 </html>
