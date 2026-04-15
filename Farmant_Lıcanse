@@ -1,0 +1,104 @@
+================================================================================
+          HORROR MINI - BİLGİSAYAR EDİTİON ALPHA 0.03 (EULA)
+================================================================================
+001. TANIMLAR VE KAPSAM: İşbu sözleşme, HORROR MINI fikri mülkiyet sahibi ile;
+002. Yazılımı kullanan veya erişen kişi (KULLANICI) arasında akdedilmiştir.
+003. Yazılım terimi; kaynak kodlarını, HTML/CSS/JS dosyalarını ve varlıkları kapsar.
+004. MÜLKİYETİN KORUNMASI: Yazılımın tüm hakları uluslararası kanunlarla korunur.
+005. Bu yazılım açık kaynaklı bir proje DEĞİLDİR; tüm hakları geliştiriciye aittir.
+006. Yazılımın mülkiyeti, kodun bir kopyasına sahip olunsa dahi devredilemez.
+007. LİSANS VERİLMESİ: Geliştirici, sadece kişisel eğlence amaçlı kullanım izni verir.
+008. Bu izin, yazılımı kopyalama veya başkasına ticari olarak devretme hakkı tanımaz.
+009. KOPYALAMA YASAĞI: Yazılımın herhangi bir parçasının kopyalanması yasaktır.
+010. "Ctrl+C" ve "Ctrl+V" ile kodun başka projelere aktarılması ağır ihlal sayılır.
+011. Yazılımın yerel kopyaları sadece çalıştırma amacıyla önbellekte tutulabilir.
+012. DAĞITIM YASAĞI: Yazılımın izinsiz herhangi bir web sitesine yüklenmesi yasaktır.
+013. Forumlarda, Discord sunucularında veya sosyal medyada kod paylaşımı yapılamaz.
+014. Yazılımın "mirror" (ayna) linklerinin oluşturulması telif hakkı ihlalidir.
+015. TERSİNE MÜHENDİSLİK: Kodun karartılmış kısımlarının çözülmesi yasaktır.
+016. Yazılımın çalışma mantığının deşifre edilip benzerinin yapılması yasaktır.
+017. Kaynak kodun üzerinde değişiklik yaparak "Mod" oluşturmak izne tabidir.
+018. TİCARİ KISITLAMA: Yazılım üzerinden doğrudan veya dolaylı gelir elde edilemez.
+019. Yazılımın içine reklam yerleştirilemez veya paralı satışı yapılamaz.
+020. Oyun videolarında kullanımı, Geliştirici ismi belirtilerek tamamen serbesttir.
+021. ALPHA SÜRÜM ÖZEL MADDESİ: Bu sürüm (0.03) bir deneme sürümüdür ve hata içerebilir.
+022. Kullanıcı, karşılaştığı teknik hataları geliştiriciye bildirmekle yükümlü değildir.
+023. Ancak bulunan sistem açıklarının kötüye kullanılması ve yayılması yasaktır.
+024. GÜVENLİK VE GİZLİLİK: Yazılım, kullanıcının bilgisayarında izinsiz veri toplamaz.
+025. KULLANICI, yazılımın kod yapısındaki özel teknikleri gizli tutmayı kabul eder.
+026. Kodun ifşa edilmesi durumunda doğacak tüm zararlardan KULLANICI sorumludur.
+027. SORUMLULUK SINIRLAMASI: Donanımsal arızalardan Geliştirici sorumlu değildir.
+028. Stalker mekaniğinin neden olabileceği ani korku durumları kullanıcı sorumluluğundadır.
+029. Yazılım "olduğu gibi" sunulur; herhangi bir performans garantisi verilmez.
+030. İHLAL MÜEYYİDELERİ: Sözleşme ihlalinde Geliştirici erişimi engelleme hakkına sahiptir.
+031. İzinsiz paylaşım yapan sitelere DMCA (Dijital Telif Yasası) bildirimi yapılır.
+032. Maddi zarar oluşması durumunda Geliştirici tazminat davası açma hakkını saklı tutar.
+033. HUKUKİ YETKİ: Bu sözleşmeden doğan uyuşmazlıklarda yerel mahkemeler yetkilidir.
+034. Sözleşmenin bir maddesinin geçersiz sayılması, diğer maddeleri asla etkilemez.
+035. SÖZLEŞME DEĞİŞİKLİKLERİ: Geliştirici, metni dilediği zaman güncelleme hakkına sahiptir.
+036. Güncellenen metin, yazılımın yeni sürümlerinde otomatik olarak geçerli sayılır.
+037. YAZILIMIN FİKRİ MÜLKİYETİ: Chunk algoritmaları geliştiricinin özel tasarımıdır.
+038. Stalker yapay zeka kodları "Ticari Sır" kapsamında yasal koruma altındadır.
+039. Blok dokuları ve renk paleti projenin özgün kimliğini ve markasını oluşturur.
+040. KULLANICI BEYANI: KULLANICI, yazılımı çalıştırarak tüm şartları kabul etmiş sayılır.
+041. Şartları kabul etmeyen KULLANICI, yazılımı derhal cihazından silmelidir.
+042. İZİN PROSEDÜRÜ: Yazılımın dağıtımı için sadece yazılı resmi onay alınmalıdır.
+043. Sözlü veya kayıt dışı izinler hukuki bir geçerlilik ve koruma taşımaz.
+044. MARKA HAKLARI: "HORROR MINI" ismi ve logosu tescilli ve korunmaktadır.
+045. Bu isim altında benzer başka yazılım üretilmesi ve yayınlanması yasaktır.
+046. ÜÇÜNCÜ TARAF KÜTÜPHANELER: Three.js kütüphanesi kendi lisansına tabidir.
+047. Ancak bu durum, projenin ana kodunun telif hakkını hiçbir şekilde ortadan kaldırmaz.
+048. GELİŞTİRİCİ HAKLARI: Geliştirici projeyi dilediği zaman yayından kaldırabilir.
+049. Proje üzerindeki tüm tasarruf yetkisi münhasıran Geliştirici tarafındadır.
+050. TEKNİK KISITLAMALAR: Kopyalamayı engelleyen kodlar devre dışı bırakılamaz.
+051. Lisans kontrol mekanizmalarıyla oynanması hukuki olarak ağır kusur sayılır.
+052. MANEVİ HAKLAR: Geliştirici, eser sahibi olarak belirtilme hakkından feragat etmez.
+053. Eserin bütünlüğünü bozacak her türlü yazılımsal müdahale kesinlikle yasaktır.
+054. BİLGİSAYAR EDİTİON ŞARTI: Bu lisans sadece "PC Edition" sürümü için geçerlidir.
+055. Mobil veya konsol portları (varsa) tamamen ayrı bir lisanslandırmaya tabidir.
+056. VERİ DEPOLAMA: LocalStorage üzerinden kaydedilen veriler KULLANICI sorumluluğundadır.
+057. Save dosyalarının çalınması veya bozulmasından Geliştirici sorumlu tutulamaz.
+058. SİBER SUÇLARLA MÜCADELE: Yazılımın içine zararlı kod enjekte edilmesi suçtur.
+059. Bu tarz eylemlerde bulunanlar hakkında siber suç duyurusu başlatılacaktır.
+060. SÖZLEŞME SÜRESİ: Sözleşme, yazılım cihazda olduğu sürece tam yürürlüktedir.
+061. Silinmesi durumunda dahi kopyalamama ve gizlilik yükümlülükleri baki kalır.
+062. DİĞER HÜKÜMLER: Yazılımın kullanımı anlık internet bağlantısı gerektirebilir.
+063. Bu durumda oluşabilecek her türlü internet maliyeti kullanıcıya aittir.
+064. ALPHA TESTİ SONU: Alpha süreci bittiğinde eski sürümlerin lisansı iptal edilebilir.
+065. KULLANICI, yeni sürüme geçmekle ve eski sürümü imha etmekle yükümlüdür.
+066. İLETİŞİM: Lisans ihlalleri veya izin talepleri için Geliştirici ile temas kurun.
+067. YÜRÜRLÜK TARİHİ: Bu lisans 15 Nisan 2026 tarihinde resmen yürürlüğe girmiştir.
+068. SON ONAY: KULLANICI, yukarıdaki 100 maddeyi kabul ederek oyuna resmen giriş yapar.
+069. TÜM HAKLARI SAKLIDIR: HORROR MINI © 2026 - Tüm içerik geliştiriciye aittir.
+070. KODUN İZİNSİZ KULLANIMI: Kodun çalınması durumunda yasal takip başlatılır.
+071. ALGORİTMA KORUMASI: Voxel render motoru mantığı kopyalanamaz ve paylaşılamaz.
+072. GÖRSEL KORUMA: Menü tasarımı ve kullanıcı arayüzü (UI) telif altındadır.
+073. SES KORUMASI: Oyun içi efektler ve ambiyans sesleri izinsiz kullanılamaz.
+074. YETKİSİZ ERİŞİM: Kaynak koda tarayıcı dışı araçlarla erişmek yasaklanmıştır.
+075. KULLANICI SORUMLULUĞU: Yazılımı üçüncü şahıslara sızdıran kullanıcı suçludur.
+076. YAZILIM GÜNCELLEMELERİ: Güncelleme sırasında oluşabilecek veri kaybı kullanıcıdadır.
+077. TEST SÜRECİ: Alpha sürümü sadece test amaçlıdır, son ürün vaadi taşımaz.
+078. PAYLAŞIM KISITI: Kodun parçalar halinde bile olsa Github/Pastebin'e atılması yasaktır.
+079. LOGO KULLANIMI: Horror Mini logosu başka mecralarda izinsiz temsil edilemez.
+080. DONANIM UYUMU: Yazılımın her donanımda çalışmamasından geliştirici sorumlu değildir.
+081. HAK KAYBI: Lisansın ihlali durumunda kullanıcı tüm haklarını anında kaybeder.
+082. FİKRİ MÜLKİYET: Yazılım, fikir ve sanat eserleri kanunu kapsamında korunur.
+083. KOD TEMİZLİĞİ: Kullanıcının kod üzerinde yaptığı manipülasyonlar geçersizdir.
+084. GERİ BİLDİRİM: Kullanıcı geri bildirimleri geliştiriciye aittir, hak talep edilemez.
+085. YAYIN HAKKI: Geliştirici yazılımı dilediği platformda yayınlamakta özgürdür.
+086. KAYIT DOSYALARI: Oyunun ürettiği yerel kayıt dosyaları şifrelenmiş olabilir.
+087. ŞİFRE ÇÖZME: Kayıt dosyalarının şifresini çözmeye çalışmak sözleşmeye aykırıdır.
+088. EĞİTİM AMAÇLI KULLANIM: Kodun eğitim amaçlı bile olsa izinsiz dağıtımı yasaktır.
+089. KİŞİSEL VERİ: Yazılım kişisel veri işlemez, anonim kullanım esastır.
+090. TARAYICI UYUMU: Chrome ve Firefox dışındaki hatalardan sorumluluk kabul edilmez.
+091. DESTEK: Alpha sürümü için resmi teknik destek sağlama zorunluluğu yoktur.
+092. PROJE GELECEĞİ: Geliştirici projeyi tamamen ücretli hale getirme hakkını saklı tutar.
+093. İSTİSNAİ DURUMLAR: Mücbir sebeplerden doğan kesintilerden geliştirici sorumlu değildir.
+094. FESİH: Kullanıcı bu lisansı yazılımı silerek dilediği zaman feshedebilir.
+095. SÖZLEŞME DİLİ: Lisansın asıl dili Türkçe olup, çeviriler bağlayıcı değildir.
+096. STALKER DAVRANIŞI: Yaratığın kodlanmış hareketleri üzerinden hak iddia edilemez.
+097. ÇERÇEVE KULLANIMI: Yazılım iframe içinde izinsiz başka sitelere gömülemez.
+098. TAM KABUL: Yazılımın ilk karesi görüldüğü an bu sözleşme imzalanmış sayılır.
+099. SON MADDE: Bu 100 madde, projenin mutlak korunması için düzenlenmiştir.
+100. HORROR MINI - BİLGİSAYAR EDİTİON © 2026 - TÜM HAKLARI SAKLIDIR.
+================================================================================
