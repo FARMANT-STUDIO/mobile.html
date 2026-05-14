@@ -18,6 +18,7 @@
             padding: 15px 40px; font-size: 20px; color: white; background: transparent;
             border: 3px solid white; cursor: pointer; border-radius: 4px; transition: 0.3s;
         }
+        #btn-create:active { background: white; color: black; }
         #ui-overlay {
             position: fixed; top: 10px; left: 10px; color: white; font-size: 10px; display: none; z-index: 50; width: 100%;
         }
@@ -25,19 +26,16 @@
             position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8);
             border: 1px solid #00ff00; padding: 5px; color: #00ff00; font-size: 9px; display: none;
         }
-        
-        /* MOBİL KONTROLLER */
         #mobile-controls {
             position: fixed; bottom: 20px; left: 20px; display: none; grid-template-columns: repeat(3, 60px); gap: 10px; z-index: 70;
         }
         .touch-btn {
             width: 60px; height: 60px; background: rgba(255,255,255,0.2); border: 2px solid #fff;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: white; font-size: 10px; border-radius: 10px; -webkit-user-select: none;
+            color: white; font-size: 10px; border-radius: 10px;
         }
         .touch-btn:active { background: rgba(255,255,255,0.5); }
         .arrow { font-size: 24px; font-weight: bold; }
-        
         #jump-btn {
             position: fixed; bottom: 40px; right: 80px; width: 70px; height: 70px;
             background: rgba(255,0,0,0.3); border: 2px solid white; border-radius: 50%;
@@ -59,7 +57,7 @@
     </div>
 
     <div id="ui-overlay">
-        <div style="color: #00ffff; font-weight: bold; font-size: 14px;">MOBİLE İÇİN UYUMLU</div>
+        <div style="color: #00ffff; font-weight: bold; font-size: 14px;">MOBILE UYUMLU</div>
         <span>DEV: STRLXY-B9Q</span>
     </div>
 
@@ -76,16 +74,15 @@
     <div id="jump-btn">ZIPLA</div>
 
     <div id="gpu-monitor">
-        <div>GPU: <span id="gpu-load">0%</span></div>
-        <div>STATUS: <span id="aux-status">READY</span></div>
+        <div>DRAWCALLS: <span id="gpu-load">0</span></div>
+        <div>STATUS: <span id="aux-status">RUNNING</span></div>
     </div>
 
     <script>
         let scene, camera, renderer, simplex, worldSeed;
         let clock = new THREE.Clock();
-        const CHUNK_SIZE = 10; // Mobil performans için biraz küçültüldü
+        const CHUNK_SIZE = 8; 
         const VIEW_DISTANCE = 2; 
-        const SEA_LEVEL = 23;
         const worldBlocks = new Map();
         const chunkMeshes = new Map();
         
@@ -96,14 +93,12 @@
             sprintMultiplier: 1,
             jumpForce: 0.18,
             onGround: false,
-            height: 1.8,
-            radius: 0.4
+            height: 1.8
         };
 
         const keys = {};
         let touchX = null, touchY = null;
 
-        document.getElementById('btn-create').addEventListener('touchstart', (e) => { e.preventDefault(); startGame(); });
         document.getElementById('btn-create').addEventListener('click', startGame);
 
         function startGame() {
@@ -117,33 +112,30 @@
         }
 
         function initGame() {
-            worldSeed = Math.floor(Math.random() * 9000000);
+            worldSeed = Math.floor(Math.random() * 900000);
             simplex = new SimplexNoise(worldSeed.toString());
 
             scene = new THREE.Scene();
-            const skyColor = 0x111115;
+            const skyColor = 0x050508;
             scene.background = new THREE.Color(skyColor);
-            scene.fog = new THREE.Fog(skyColor, 2, 30);
+            scene.fog = new THREE.Fog(skyColor, 5, 25);
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             
             renderer = new THREE.WebGLRenderer({ antialias: false });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setPixelRatio(window.devicePixelRatio > 1 ? 1.5 : 1);
             document.body.appendChild(renderer.domElement);
 
-            const sun = new THREE.PointLight(0xffffff, 0.8, 50);
-            scene.add(sun);
-            scene.add(new THREE.AmbientLight(0x404040, 0.5));
+            const light = new THREE.PointLight(0xffffff, 1, 20);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x202020, 0.5));
 
             initMaterials();
             
-            player.pos.set(0, getTerrainHeight(0, 0) + 2, 0);
-
-            // Mobil Dokunmatik Eventleri
+            player.pos.set(0, getTerrainHeight(0, 0) + 5, 0);
             setupMobileEvents();
-            
-            requestAnimationFrame(animate);
+            animate();
         }
 
         function setupMobileEvents() {
@@ -160,46 +152,44 @@
             bindBtn('jump-btn', 'Space');
             
             const sBtn = document.getElementById('sprint-btn');
-            sBtn.addEventListener('touchstart', (e) => { e.preventDefault(); player.sprintMultiplier = 2.0; sBtn.style.background = "orange"; });
-            sBtn.addEventListener('touchend', (e) => { e.preventDefault(); player.sprintMultiplier = 1.0; sBtn.style.background = "rgba(255,136,0,0.3)"; });
+            sBtn.addEventListener('touchstart', (e) => { e.preventDefault(); player.sprintMultiplier = 1.8; });
+            sBtn.addEventListener('touchend', (e) => { e.preventDefault(); player.sprintMultiplier = 1.0; });
 
-            // Ekran Kaydırma (Bakış)
             window.addEventListener('touchstart', e => {
-                if(e.target.tagName !== 'BUTTON' && !e.target.closest('.touch-btn')) {
+                if(e.target.tagName !== 'BUTTON' && !e.target.closest('.touch-btn') && e.target.id !== 'jump-btn') {
                     touchX = e.touches[0].pageX;
                     touchY = e.touches[0].pageY;
                 }
             });
 
             window.addEventListener('touchmove', e => {
-                if(touchX !== null && e.target.tagName !== 'BUTTON') {
+                if(touchX !== null) {
                     const dx = e.touches[0].pageX - touchX;
                     const dy = e.touches[0].pageY - touchY;
-                    camera.rotation.y -= dx * 0.005;
-                    camera.rotation.x -= dy * 0.005;
+                    camera.rotation.y -= dx * 0.007;
+                    camera.rotation.x -= dy * 0.007;
                     camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, camera.rotation.x));
                     touchX = e.touches[0].pageX;
                     touchY = e.touches[0].pageY;
                 }
-            });
+            }, {passive: false});
 
             window.addEventListener('touchend', () => { touchX = null; touchY = null; });
         }
 
         let matList;
         function initMaterials() {
-            const grassTop = new THREE.MeshLambertMaterial({color: 0x2d5e2d});
-            const dirt = new THREE.MeshLambertMaterial({color: 0x5D2906});
+            const grassTop = new THREE.MeshLambertMaterial({color: 0x1a331a});
+            const dirt = new THREE.MeshLambertMaterial({color: 0x3d1f05});
             matList = {
                 grass: [dirt, dirt, grassTop, dirt, dirt, dirt],
                 dirt: dirt,
-                stone: new THREE.MeshLambertMaterial({color: 0x444444}),
-                water: new THREE.MeshLambertMaterial({color: 0x001133, transparent: true, opacity: 0.7})
+                stone: new THREE.MeshLambertMaterial({color: 0x222222})
             };
         }
 
         function getTerrainHeight(x, z) {
-            return Math.floor(25 + simplex.noise2D(x * 0.05, z * 0.05) * 8);
+            return Math.floor(15 + simplex.noise2D(x * 0.05, z * 0.05) * 5);
         }
 
         function createChunk(cx, cz) {
@@ -208,58 +198,34 @@
 
             const group = new THREE.Group();
             const geo = new THREE.BoxGeometry(1, 1, 1);
-            const blocks = { grass: [], dirt: [], stone: [] };
-
+            
+            // Chunk oluşturma basitleştirildi (Performans için)
             for (let x = 0; x < CHUNK_SIZE; x++) {
                 for (let z = 0; z < CHUNK_SIZE; z++) {
                     const wx = cx * CHUNK_SIZE + x;
                     const wz = cz * CHUNK_SIZE + z;
                     const h = getTerrainHeight(wx, wz);
 
-                    blocks.grass.push(new THREE.Vector3(wx, h, wz));
-                    setBlock(wx, h, wz, 'grass');
-                    
-                    for(let y = 1; y < 3; y++) {
-                        blocks.dirt.push(new THREE.Vector3(wx, h-y, wz));
-                        setBlock(wx, h-y, wz, 'dirt');
-                    }
+                    const mesh = new THREE.Mesh(geo, matList.grass);
+                    mesh.position.set(wx, h, wz);
+                    group.add(mesh);
+                    worldBlocks.set(`${wx},${h},${wz}`, 'grass');
                 }
             }
-
-            Object.keys(blocks).forEach(type => {
-                const list = blocks[type];
-                const inst = new THREE.InstancedMesh(geo, type === 'grass' ? matList.grass : matList[type], list.length);
-                const mat = new THREE.Matrix4();
-                list.forEach((pos, i) => {
-                    mat.setPosition(pos);
-                    inst.setMatrixAt(i, mat);
-                });
-                group.add(inst);
-            });
 
             scene.add(group);
             chunkMeshes.set(key, group);
         }
 
-        function setBlock(x, y, z, type) {
-            worldBlocks.set(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`, type);
-        }
-
-        function getBlock(x, y, z) {
-            return worldBlocks.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
-        }
-
         function checkCollision(x, y, z) {
-            const h = player.height;
-            for (let oy = 0.2; oy <= h; oy += h/2) {
-                if (getBlock(x, y + oy, z)) return true;
-            }
-            return false;
+            const floorY = getTerrainHeight(Math.round(x), Math.round(z));
+            return y < floorY + 1;
         }
 
         function updatePhysics() {
-            player.vel.y -= 0.01;
+            player.vel.y -= 0.01; // Gravity
             const moveDir = new THREE.Vector3();
+            
             if (keys['KeyW']) moveDir.z -= 1;
             if (keys['KeyS']) moveDir.z += 1;
             if (keys['KeyA']) moveDir.x -= 1;
@@ -270,24 +236,25 @@
             moveDir.normalize();
 
             let curSpeed = player.speed * player.sprintMultiplier;
-            const nextX = player.pos.x + moveDir.x * curSpeed;
-            const nextZ = player.pos.z + moveDir.z * curSpeed;
+            player.pos.x += moveDir.x * curSpeed;
+            player.pos.z += moveDir.z * curSpeed;
 
-            if (!checkCollision(nextX, player.pos.y, player.pos.z)) player.pos.x = nextX;
-            if (!checkCollision(player.pos.x, player.pos.y, nextZ)) player.pos.z = nextZ;
+            player.pos.y += player.vel.y;
+            const groundY = getTerrainHeight(Math.round(player.pos.x), Math.round(player.pos.z));
 
-            const nextY = player.pos.y + player.vel.y;
-            if (checkCollision(player.pos.x, nextY, player.pos.z)) {
-                if (player.vel.y < 0) player.onGround = true;
+            if (player.pos.y < groundY + 1.5) {
+                player.pos.y = groundY + 1.5;
                 player.vel.y = 0;
+                player.onGround = true;
             } else {
-                player.pos.y = nextY;
                 player.onGround = false;
             }
 
-            if (keys['Space'] && player.onGround) player.vel.y = player.jumpForce;
+            if (keys['Space'] && player.onGround) {
+                player.vel.y = player.jumpForce;
+            }
 
-            camera.position.copy(player.pos).y += 1.6;
+            camera.position.copy(player.pos);
         }
 
         function animate() {
@@ -312,7 +279,6 @@
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
     </script>
 </body>
 </html>
