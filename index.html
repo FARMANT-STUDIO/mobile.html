@@ -1,91 +1,348 @@
-<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport"content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"><title>KORKU MINI PRE-ALPHA 0.06</title><!--Tailwind CSS ve Gerekli Kütüphaneler--><script src="https://cdn.tailwindcss.com"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script><link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap"rel="stylesheet">
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KORKU MINI PRE-ALPHA 0.06</title>
+    <!-- Tailwind CSS ve Gerekli Kütüphaneler -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplex-noise@2.4.0/simplex-noise.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: #020202; 
+            font-family: 'Courier Prime', monospace; 
+            user-select: none; 
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+        /* CRT Ekran Filtresi & Glitch Efektleri */
+        .crt::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        .glitch-text {
+            animation: glitch 1.5s infinite;
+        }
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 0 #ff0000, -2px 0 0 #00ffff; }
+            25% { text-shadow: -2px 0 0 #ff0000, 2px 0 0 #00ffff; }
+            50% { text-shadow: 2px -2px 0 #ff0000, -2px 2px 0 #00ffff; }
+            75% { text-shadow: -1px 2px 0 #ff0000, 1px -2px 0 #00ffff; }
+            100% { text-shadow: 2px 0 0 #ff0000, -2px 0 0 #00ffff; }
+        }
 
-<style>body{margin:0;overflow:hidden;background:#020202;font-family:'Courier Prime',monospace;user-select:none;-webkit-user-select:none;touch-action:none;}canvas{display:block;width:100 vw;height:100 vh;}
-/* CRT Ekran Filtresi & Glitch Efektleri */
-.crt::after{content:" ";display:block;position:absolute;top:0;left:0;bottom:0;right:0;background:linear-gradient(rgba(18,16,16,0)50%,rgba(0,0,0,0.25)50%),linear-gradient(90d eg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06));z-index:99;background-size:100%4 px,6 px 100%;pointer-events:none;}.glitch-text{animation:glitch 1.5 s infinite;}
-@keyframes
-glitch{0%{text-shadow:2 px 0 0#ff0000,-2 px 0 0#00f fff;}25%{text-shadow:-2 px 0 0#ff0000,2 px 0 0#00f fff;}50%{text-shadow:2 px-2 px 0#ff0000,-2 px 2 px 0#00f fff;}75%{text-shadow:-1 px 2 px 0#ff0000,1 px-2 px 0#00f fff;}100%{text-shadow:2 px 0 0#ff0000,-2 px 0 0#00f fff;}}
+        /* Joystick Görsel Ayarları */
+        .joystick-base {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            position: relative;
+            touch-action: none;
+        }
+        .joystick-thumb {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="crt select-none">
 
-/* Joystick Görsel Ayarları */
-.joystick-base{width:120 px;height:120 px;background:rgba(255,255,255,0.08);border:2 px solid rgba(255,255,255,0.25);border-radius:50%;position:relative;touch-action:none;}.joystick-thumb{width:50 px;height:50 px;background:rgba(255,255,255,0.4);border:1 px solid rgba(255,255,255,0.8);border-radius:50%;position:absolute;top:35 px;left:35 px;pointer-events:none;}</style></head><body class="crt select-none">
+    <!-- Yatay Ekran Kilidi/Uyarısı (Sadece dikey mobil ekranlar için) -->
+    <div id="orientation-warning" class="fixed inset-0 bg-black z-[120] hidden flex-col items-center justify-center text-center p-6">
+        <svg class="w-20 h-20 text-red-600 animate-bounce mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17.5" />
+        </svg>
+        <h1 class="text-white text-2xl font-black mb-2 tracking-wider">LÜTFEN TELEFONU YATAY TUTUN</h1>
+        <p class="text-zinc-500 text-sm">Daha iyi bir oyun deneyimi için cihazınızı yatay konuma getirin.</p>
+    </div>
 
-<!--Yatay Ekran Kilidi/Uyarısı(Sadece dikey mobil ekranlar için)--><div id="orientation-warning"class="fixed inset-0 bg-black z-[120] hidden flex-col items-center justify-center text-center p-6"><svg class="w-20 h-20 text-red-600 animate-bounce mb-4"fill="none"viewBox="0 0 24 24"stroke="currentColor"><path stroke-linecap="round"stroke-linejoin="round"stroke-width="2"d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17.5"/></svg><h1 class="text-white text-2xl font-black mb-2 tracking-wider">LÜTFEN TELEFONU YATAY TUTUN</h1><p class="text-zinc-500 text-sm">Daha iyi bir oyun deneyimi için cihazınızı yatay konuma getirin.</p></div>
+    <!-- 5 Saniyelik Sinematik Giriş Ekranı (Farmant Studios Splash Screen) -->
+    <div id="splash-screen" class="fixed inset-0 bg-gradient-to-b from-[#0b0c0e] via-[#050607] to-black flex flex-col items-center justify-center z-[100] transition-all duration-[1500ms] ease-in-out opacity-100">
+        <div class="text-center select-none pointer-events-none transform scale-95 animate-[pulse_3s_infinite] flex flex-col items-center">
+            
+            <!-- Geometrik 'F' Logosu -->
+            <div class="relative w-40 h-40 mb-6 flex items-center justify-center">
+                <!-- Arka plan parlama efekti -->
+                <div class="absolute inset-0 bg-white/5 blur-2xl rounded-full"></div>
+                
+                <!-- Keskin 'F' harfi SVG Çizimi -->
+                <svg class="w-32 h-32 text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Kod çizgisi dokusu -->
+                        <pattern id="lines" width="10" height="3" patternUnits="userSpaceOnUse">
+                            <line x1="0" y1="1" x2="10" y2="1" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z" fill="#1b1c1e" />
+                    <path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z" fill="url(#lines)" />
+                    <path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z" stroke="rgba(255,255,255,0.4)" stroke-width="0.8" />
+                </svg>
+            </div>
 
-<!--5 Saniyelik Sinematik Giriş Ekranı(Farmant Studios Splash Screen)--><div id="splash-screen"class="fixed inset-0 bg-gradient-to-b from-[#0b0c0e] via-[#050607] to-black flex flex-col items-center justify-center z-[100] transition-all duration-[1500ms] ease-in-out opacity-100"><div class="text-center select-none pointer-events-none transform scale-95 animate-[pulse_3s_infinite] flex flex-col items-center">
+            <!-- "FARMANT STUDIOS" Yazısı -->
+            <h1 class="text-white text-4xl md:text-5xl font-sans font-bold tracking-[0.25em] mb-2 uppercase drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                FARMANT
+            </h1>
+            <h2 class="text-zinc-500 text-sm md:text-base font-sans tracking-[0.45em] font-medium uppercase opacity-80">
+                STUDIOS
+            </h2>
+        </div>
+    </div>
 
-<!--Özelleştirilmiş Geometrik'F'Logosu--><div class="relative w-40 h-40 mb-6 flex items-center justify-center"><!--Arka plan parlama efekti--><div class="absolute inset-0 bg-white/5 blur-2xl rounded-full"></div>
+    <!-- Sade ve Şık Ana Menü -->
+    <div id="menu" class="fixed inset-0 bg-radial from-[#150202] to-black flex flex-col items-center justify-center z-50 p-4 transition-all duration-700">
+        <div class="text-center max-w-lg">
+            <h1 id="title" class="text-red-600 text-6xl md:text-8xl font-black tracking-wider glitch-text mb-2 drop-shadow-[0_5px_15px_rgba(255,0,0,0.4)]">HORROR MINI</h1>
+            <div id="version" class="text-white text-lg tracking-[0.3em] font-semibold mb-8 opacity-90">PRE-ALPHA 0.05</div>
+            <button id="btn-create" class="px-10 py-4 text-xl font-bold tracking-widest text-white border-2 border-red-600 hover:bg-red-600 hover:text-black transition-all duration-300 rounded shadow-[0_0_15px_rgba(255,0,0,0.3)] active:scale-95">
+                DÜNYA OLUŞTUR
+            </button>
+        </div>
+    </div>
 
-<!--Keskin'F'harfi SVG Çizimi--><svg class="w-32 h-32 text-zinc-300 drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]"viewBox="0 0 100 100"fill="none"xmlns="http://www.w3.org/2000/svg"><defs><!--Kod çizgisi dokusunu harfe maskelemek için desen--><pattern id="lines"width="10"height="3"patternUnits="userSpaceOnUse"><line x1="0"y1="1"x2="10"y2="1"stroke="rgba(255,255,255,0.25)"stroke-width="1"/></pattern></defs><!--Ana Gölge/Gövde--><path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z"fill="#1b1c1e"/><!--Dokulu Üst Katman--><path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z"fill="url(#lines)"/><!--İnce Parlak Sınır Çizgisi--><path d="M32 15 L70 15 L62 25 H45 V45 H58 L52 55 H45 V85 L32 77 Z"stroke="rgba(255,255,255,0.4)"stroke-width="0.8"/></svg></div>
+    <!-- Oyun İçi HUD Göstergeleri -->
+    <div id="ui-overlay" class="fixed top-4 left-4 text-white text-[10px] md:text-xs font-mono space-y-1 hidden z-40 pointer-events-none">
+        <div class="flex items-center space-x-2">
+            <span class="bg-red-600 text-black font-black px-1.5 py-0.5 rounded">PRE-ALPHA 0.05</span>
+            <span class="text-orange-500 font-bold hidden md:inline">STRLXY-B9Q GÜVENCESİ</span>
+        </div>
+        <div class="text-gray-400 pt-1">TOHUM (32-BIT): <span id="ui-seed" class="text-white">...</span></div>
+        <div class="text-gray-400">BIYOM: <span id="ui-biome" class="text-green-400 font-bold">Sakin Orman</span></div>
+        <div class="text-gray-400">KOORDİNAT: <span id="ui-coords" class="text-yellow-400">X: 0 | Y: 0 | Z: 0</span></div>
+    </div>
 
-<!--"FARMANT STUDIOS"Metin Tasarımı--><h1 class="text-white text-4xl md:text-5xl font-sans font-bold tracking-[0.25em] mb-2 uppercase drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">FARMANT</h1><h2 class="text-zinc-500 text-sm md:text-base font-sans tracking-[0.45em] font-medium uppercase opacity-80">STUDIOS</h2></div></div>
+    <!-- Mobil Sağ Üst Menü / Pause Butonu -->
+    <button id="mobile-menu-btn" class="fixed top-4 right-4 bg-black/75 border border-zinc-700 text-white w-12 h-12 flex items-center justify-center text-xl rounded-full z-45 active:scale-90 hidden">
+        ☰
+    </button>
 
-<!--Sade ve Şık Ana Menü--><div id="menu"class="fixed inset-0 bg-radial from-[#150202] to-black flex flex-col items-center justify-center z-50 p-4 transition-all duration-700"><div class="text-center max-w-lg"><h1 id="title"class="text-red-600 text-6xl md:text-8xl font-black tracking-wider glitch-text mb-2 drop-shadow-[0_5px_15px_rgba(255,0,0,0.4)]">HORROR MINI</h1><div id="version"class="text-white text-lg tracking-[0.3em] font-semibold mb-8 opacity-90">PRE-ALPHA 0.05</div><button id="btn-create"class="px-10 py-4 text-xl font-bold tracking-widest text-white border-2 border-red-600 hover:bg-red-600 hover:text-black transition-all duration-300 rounded shadow-[0_0_15px_rgba(255,0,0,0.3)] active:scale-95">DÜNYA OLUŞTUR</button></div></div>
+    <!-- Korku Biyomu Mesaj Ekranı -->
+    <div id="scary-overlay" class="fixed inset-0 pointer-events-none z-40 flex items-center justify-center hidden bg-red-950/10 transition-all duration-200">
+        <div id="scary-text" class="text-red-600 font-black text-2xl md:text-6xl text-center glitch-text tracking-widest px-4 leading-normal drop-shadow-[0_0_20px_rgba(255,0,0,0.8)]">
+            HATA: İLK BİYOM!
+        </div>
+    </div>
 
-<!--Oyun İçi HUD Göstergeleri--><div id="ui-overlay"class="fixed top-4 left-4 text-white text-[10px] md:text-xs font-mono space-y-1 hidden z-40 pointer-events-none"><div class="flex items-center space-x-2"><span class="bg-red-600 text-black font-black px-1.5 py-0.5 rounded">PRE-ALPHA 0.05</span><span class="text-orange-500 font-bold hidden md:inline">STRLXY-B9Q GÜVENCESİ</span></div><div class="text-gray-400 pt-1">TOHUM(32-BIT):<span id="ui-seed"class="text-white">...</span></div><div class="text-gray-400">BIYOM:<span id="ui-biome"class="text-green-400 font-bold">Sakin Orman</span></div><div class="text-gray-400">KOORDİNAT:<span id="ui-coords"class="text-yellow-400">X:0|Y:0|Z:0</span></div></div>
+    <!-- Hedef Artısı (Crosshair) -->
+    <div id="crosshair" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white font-light text-xl select-none pointer-events-none hidden z-40 opacity-70">+</div>
 
-<!--Mobil Sağ Üst Menü/Pause Butonu--><button id="mobile-menu-btn"class="fixed top-4 right-4 bg-black/75 border border-zinc-700 text-white w-12 h-12 flex items-center justify-center text-xl rounded-full z-40 active:scale-90 hidden">☰</button>
+    <!-- Sistem Takipçisi -->
+    <div id="gpu-monitor" class="fixed bottom-4 right-4 bg-black/90 border border-green-500/30 p-3 rounded text-[9px] text-green-400 font-mono space-y-0.5 hidden z-30 min-w-[150px] shadow-lg pointer-events-none">
+        <div class="border-b border-green-500/20 pb-0.5 mb-0.5 font-bold text-center tracking-wider text-green-300">SİSTEM TAKİPÇİSİ</div>
+        <div class="flex justify-between"><span>FPS:</span> <span id="gpu-fps" class="text-white font-bold">60</span></div>
+        <div class="flex justify-between"><span>UYKUDAKİ CHUNKLAR:</span> <span id="gpu-sleeping" class="text-cyan-400 font-bold">0</span></div>
+        <div class="flex justify-between"><span>TOPLAM CHUNK:</span> <span id="gpu-total-chunks" class="text-yellow-500">0</span></div>
+    </div>
 
-<!--Korku Biyomu Mesaj Ekranı--><div id="scary-overlay"class="fixed inset-0 pointer-events-none z-40 flex items-center justify-center hidden bg-red-950/10 transition-all duration-200"><div id="scary-text"class="text-red-600 font-black text-2xl md:text-6xl text-center glitch-text tracking-widest px-4 leading-normal drop-shadow-[0_0_20px_rgba(255,0,0,0.8)]">HATA:İLK BİYOM!</div></div>
+    <!-- Güvenli Ara Menü (Pause Menu) -->
+    <div id="pause-menu" class="fixed inset-0 bg-black/85 flex flex-col items-center justify-center z-50 p-4 hidden">
+        <div class="text-center bg-[#110101] border border-red-900/40 p-10 rounded-lg shadow-[0_0_30px_rgba(255,0,0,0.15)] max-w-sm w-full">
+            <h2 class="text-red-600 text-3xl font-black tracking-wider mb-8 glitch-text">OYUN DURDURULDU</h2>
+            <div class="flex flex-col space-y-4">
+                <button id="btn-resume" class="w-full py-4 text-base font-bold tracking-widest text-white border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition-all duration-200 rounded active:scale-95">
+                    OYUNA DEVAM ET
+                </button>
+                <button id="btn-back-to-menu" class="w-full py-4 text-base font-bold tracking-widest text-red-500 border border-red-900/40 bg-transparent hover:bg-red-950/20 transition-all duration-200 rounded active:scale-95">
+                    MENÜYE GERİ DÖN
+                </button>
+            </div>
+        </div>
+    </div>
 
-<!--Hedef Artısı(Crosshair)--><div id="crosshair"class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white font-light text-xl select-none pointer-events-none hidden z-40 opacity-70">+</div>
+    <!-- MOBİL KONTROL PANELİ -->
+    <div id="mobile-controls-panel" class="fixed inset-0 pointer-events-none z-40 select-none hidden">
+        <!-- SOL ALT: Zıplama Butonu, Joystick, Koşma Butonu -->
+        <div class="absolute bottom-6 left-6 flex items-center space-x-6 pointer-events-auto">
+            <!-- Zıplama Butonu (Joystick'in Solunda) -->
+            <button id="btn-mobile-jump" class="w-16 h-16 bg-white/10 border-2 border-white/30 active:bg-white/35 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg select-none">
+                ZIPLA
+            </button>
 
-<!--Sistem Takipçisi--><div id="gpu-monitor"class="fixed bottom-4 right-4 bg-black/90 border border-green-500/30 p-3 rounded text-[9px] text-green-400 font-mono space-y-0.5 hidden z-30 min-w-[150px] shadow-lg pointer-events-none"><div class="border-b border-green-500/20 pb-0.5 mb-0.5 font-bold text-center tracking-wider text-green-300">SİSTEM TAKİPÇİSİ</div><div class="flex justify-between"><span>FPS:</span><span id="gpu-fps"class="text-white font-bold">60</span></div><div class="flex justify-between"><span>UYKUDAKİ CHUNKLAR:</span><span id="gpu-sleeping"class="text-cyan-400 font-bold">0</span></div><div class="flex justify-between"><span>TOPLAM CHUNK:</span><span id="gpu-total-chunks"class="text-yellow-500">0</span></div></div>
+            <!-- Joystick Base -->
+            <div id="mobile-joystick" class="joystick-base">
+                <div id="mobile-joystick-thumb" class="joystick-thumb"></div>
+            </div>
 
-<!--Güvenli Ara Menü(Pause Menu)--><div id="pause-menu"class="fixed inset-0 bg-black/85 flex flex-col items-center justify-center z-50 p-4 hidden"><div class="text-center bg-[#110101] border border-red-900/40 p-10 rounded-lg shadow-[0_0_30px_rgba(255,0,0,0.15)] max-w-sm w-full"><h2 class="text-red-600 text-3xl font-black tracking-wider mb-8 glitch-text">OYUN DURDURULDU</h2><div class="flex flex-col space-y-4"><button id="btn-resume"class="w-full py-4 text-base font-bold tracking-widest text-white border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 transition-all duration-200 rounded active:scale-95">OYUNA DEVAM ET</button><button id="btn-back-to-menu"class="w-full py-4 text-base font-bold tracking-widest text-red-500 border border-red-900/40 bg-transparent hover:bg-red-950/20 transition-all duration-200 rounded active:scale-95">MENÜYE GERİ DÖN</button></div></div></div>
+            <!-- Hızlanma / Koşma Butonu (Joystick'in Sağında) -->
+            <button id="btn-mobile-sprint" class="w-16 h-16 bg-white/10 border-2 border-white/30 active:bg-white/45 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-lg select-none">
+                KOŞ
+            </button>
+        </div>
 
-<!--MOBİL KONTROL PANELİ(Oyun başladığında mobil ise görünecektir)--><div id="mobile-controls-panel"class="fixed inset-0 pointer-events-none z-40 select-none hidden"><!--SOL ALT:Joystick,Zıplama ve Koşma Butonları--><div class="absolute bottom-6 left-6 flex items-center space-x-6 pointer-events-auto"><!--Zıplama Butonu(Joystick'in Solunda)--><button id="btn-mobile-jump"class="w-16 h-16 bg-white/10 border-2 border-white/30 active:bg-white/30 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-lg select-none">ZIPLA</button>
+        <!-- SAĞ ALT: Blok Koyma ve Kırma Butonları -->
+        <div class="absolute bottom-6 right-6 flex flex-col space-y-4 pointer-events-auto items-end">
+            <!-- Blok Koyma Butonu -->
+            <button id="btn-mobile-place" class="w-20 h-16 bg-green-700/60 border-2 border-green-500/40 active:bg-green-600 text-white rounded-lg flex flex-col items-center justify-center text-[11px] font-bold shadow-lg select-none">
+                <span>➕</span>
+                <span class="mt-0.5">BLOK KOY</span>
+            </button>
+            
+            <!-- Blok Kırma Butonu (Onun altında) -->
+            <button id="btn-mobile-break" class="w-20 h-16 bg-red-800/60 border-2 border-red-500/40 active:bg-red-700 text-white rounded-lg flex flex-col items-center justify-center text-[11px] font-bold shadow-lg select-none">
+                <span>🔨</span>
+                <span class="mt-0.5">KIR</span>
+            </button>
+        </div>
+    </div>
 
-<!--Joystick Base--><div id="mobile-joystick"class="joystick-base"><div id="mobile-joystick-thumb"class="joystick-thumb"></div></div>
+    <script>
+        let scene, camera, renderer, simplex1, simplex2, simplex3, worldSeed;
+        let sunLight, ambientLight;
+        let clock = new THREE.Clock();
+        let animationFrameId = null;
+        let gameActive = false;
+        let isPaused = false;
+        let isMobileDevice = false;
 
-<!--Hızlanma/Koşma Butonu(Joystick'in Sağında)--><button id="btn-mobile-sprint"class="w-16 h-16 bg-white/10 border-2 border-white/30 active:bg-white/40 text-white rounded-full flex items-center justify-center text-[10px] font-bold shadow-lg select-none">KOŞ</button></div>
+        const CHUNK_SIZE = 12;
+        const VIEW_DISTANCE = 3; 
+        const SEA_LEVEL = 18;
+        
+        const worldBlocks = new Map();
+        const chunkMeshes = new Map();
+        const generatedChunks = new Set();
+        let activeChunks = [];
+        
+        // Gizemli Korku Biyomunun Sınırları (50x50 Alan)
+        const BIOME_MIN_X = 35;
+        const BIOME_MAX_X = 85;
+        const BIOME_MIN_Z = 35;
+        const BIOME_MAX_Z = 85;
+        
+        let insideGrayBiome = false;
+        let grayBiomeTrees = []; 
+        let creepyObserver = null; 
+        let lastScreamTime = 0; 
+        
+        let frames = 0, lastTime = performance.now(), currentFps = 60;
 
-<!--SAĞ ALT:Blok Koyma ve Kırma Butonları--><div class="absolute bottom-6 right-6 flex flex-col space-y-4 pointer-events-auto items-end"><!--Blok Koyma Butonu--><button id="btn-mobile-place"class="w-20 h-16 bg-green-700/60 border-2 border-green-500/40 active:bg-green-600 text-white rounded-lg flex flex-col items-center justify-center text-[11px] font-bold shadow-lg select-none"><span>➕</span><span class="mt-0.5">BLOK KOY</span></button>
+        const player = {
+            pos: new THREE.Vector3(0, 40, 0),
+            vel: new THREE.Vector3(0, 0, 0),
+            speed: 0.07, 
+            runMultiplier: 2.1, 
+            crouchMultiplier: 0.5,
+            jumpForce: 0.18,
+            onGround: false,
+            inWater: false,
+            height: 1.8,
+            radius: 0.35,
+            isCrouching: false,
+            isSprinting: false,
+            spawnPos: new THREE.Vector3(0, 40, 0) 
+        };
 
-<!--Blok Kırma Butonu(Onun altında)--><button id="btn-mobile-break"class="w-20 h-16 bg-red-800/60 border-2 border-red-500/40 active:bg-red-700 text-white rounded-lg flex flex-col items-center justify-center text-[11px] font-bold shadow-lg select-none"><span>🔨</span><span class="mt-0.5">KIR</span></button></div></div>
+        const keys = {};
 
-<script>let scene,camera,renderer,simplex1,simplex2,simplex3,worldSeed;let sunLight,ambientLight;let clock=new THREE.Clock();let animationFrameId=null;let gameActive=false;let isPaused=false;let isMobileDevice=false;
+        // Mobil Durumsal Tuş Eşlemesi
+        const mobileKeys = {
+            forward: 0,
+            backward: 0,
+            left: 0,
+            right: 0,
+            jump: false,
+            sprint: false
+        };
 
-const CHUNK_SIZE=12;const VIEW_DISTANCE=3; // Mobilde performansı korumak için ideal 3 chunk görüş mesafesi
-const SEA_LEVEL=18;
+        // Dokunmatik Kamera Kaydırma Verileri
+        let lookTouchId = null;
+        let lookStart = { x: 0, y: 0 };
 
-const worldBlocks=new Map();const chunkMeshes=new Map();const generatedChunks=new Set();let activeChunks=[];
+        // Mobil Cihaz Tespiti ve Yönlendirme Kontrolü
+        function checkDeviceType() {
+            // Standart kontroller
+            isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                             ('ontouchstart' in window) || 
+                             (navigator.maxTouchPoints > 0);
+            
+            if (isMobileDevice) {
+                showMobileUI();
+            }
+        }
 
-// Gizemli Korku Biyomunun Sınırları (50x50 Alan)
-const BIOME_MIN_X=35;const BIOME_MAX_X=85;const BIOME_MIN_Z=35;const BIOME_MAX_Z=85;
+        // Mobil Arayüzünü Görünür Kılma Fonksiyonu
+        function showMobileUI() {
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            if (menuBtn) menuBtn.classList.remove('hidden');
+            
+            // Eğer oyun aktifse kontrol panelini de anında göster
+            if (gameActive) {
+                const mobilePanel = document.getElementById('mobile-controls-panel');
+                if (mobilePanel) mobilePanel.classList.remove('hidden');
+            }
+            
+            checkOrientation();
+            window.addEventListener('resize', checkOrientation);
+        }
 
-let insideGrayBiome=false;let grayBiomeTrees=[];let creepyObserver=null;let lastScreamTime=0;
+        // ANLIK DOKUNMA ALGILAYICI: Eğer cihaz masaüstü görünse bile kullanıcı bir kere ekrana dokunursa mobil kontroller anında açılır!
+        window.addEventListener('touchstart', function() {
+            if (!isMobileDevice) {
+                isMobileDevice = true;
+                showMobileUI();
+                initMobileControls();
+            }
+        }, { once: true, passive: true });
 
-let frames=0,lastTime=performance.now(),currentFps=60;
+        function checkOrientation() {
+            const warning = document.getElementById('orientation-warning');
+            if (warning) {
+                if (window.innerHeight > window.innerWidth) {
+                    warning.classList.remove('hidden');
+                    warning.classList.add('flex');
+                } else {
+                    warning.classList.add('hidden');
+                    warning.classList.remove('flex');
+                }
+            }
+        }
 
-const player={pos:new THREE.Vector3(0,40,0),vel:new THREE.Vector3(0,0,0),speed:0.07,runMultiplier:2.1,crouchMultiplier:0.5,jumpForce:0.18,onGround:false,inWater:false,height:1.8,radius:0.35,isCrouching:false,isSprinting:false,spawnPos:new THREE.Vector3(0,40,0)};
+        // Giriş Ekranı Zamanlayıcısı
+        document.addEventListener("DOMContentLoaded", () => {
+            checkDeviceType();
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.style.display = 'none';
+                    }, 1500);
+                }, 5000);
+            }
+        });
 
-const keys={};
-
-// Mobil Durumsal Tuş Eşlemesi
-const mobileKeys={forward:0,backward:0,left:0,right:0,jump:false,sprint:false};
-
-// Dokunmatik Kamera Kaydırma Verileri
-let lookTouchId=null;let lookStart={x:0,y:0};
-
-// Mobil Cihaz Tespiti ve Yönlendirme Kontrolü
-function checkDeviceType(){isMobileDevice=('ontouchstart'in window)||(navigator.maxTouchPoints>0);
-
-if(isMobileDevice){document.getElementById('mobile-menu-btn').classList.remove('hidden');checkOrientation();window.addEventListener('resize',checkOrientation);}}
-
-function checkOrientation(){const warning=document.getElementById('orientation-warning');if(window.innerHeight>window.innerWidth){warning.classList.remove('hidden');warning.classList.add('flex');}else{warning.classList.add('hidden');warning.classList.remove('flex');}}
-
-// Giriş Ekranı Zamanlayıcısı
-document.addEventListener("DOMContentLoaded",()=>{checkDeviceType();const splash=document.getElementById('splash-screen');setTimeout(()=>{splash.style.opacity='0';setTimeout(()=>{splash.style.display='none';},1500);},5000);});
-
-class SoundSynth {
-    constructor() { this.ctx = null; }
-
-    init() {
+        class SoundSynth {
+            constructor() { this.ctx = null; }
+            init() {
                 if (this.ctx) return;
                 this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             }
-
-    playBeep(freq, type = 'sine', duration = 0.1, vol = 0.1) {
+            playBeep(freq, type = 'sine', duration = 0.1, vol = 0.1) {
                 if (!this.ctx) return;
                 try {
                     const osc = this.ctx.createOscillator();
@@ -100,12 +357,9 @@ class SoundSynth {
                     osc.stop(this.ctx.currentTime + duration);
                 } catch (e) {}
             }
-
-    playMiningSound() { this.playBeep(80, 'triangle', 0.15, 0.25); }
-
-    playPlaceSound() { this.playBeep(140, 'sine', 0.12, 0.2); }
-
-    playScaryHum() {
+            playMiningSound() { this.playBeep(80, 'triangle', 0.15, 0.25); }
+            playPlaceSound() { this.playBeep(140, 'sine', 0.12, 0.2); }
+            playScaryHum() {
                 if (!this.ctx) return;
                 try {
                     const osc = this.ctx.createOscillator();
@@ -120,8 +374,7 @@ class SoundSynth {
                     osc.stop(this.ctx.currentTime + 3.0);
                 } catch (e) {}
             }
-
-    playScream(intensity = 1) {
+            playScream(intensity = 1) {
                 if (!this.ctx) return;
                 try {
                     const now = this.ctx.currentTime;
@@ -176,11 +429,10 @@ class SoundSynth {
                     osc2.stop(now + duration);
                 } catch (e) {}
             }
-        }const audio=new SoundSynth();
+        }
+        const audio = new SoundSynth();
 
-    document.getElementById('btn-create').addEventListener('click',(e)=>
-
-    {
+        document.getElementById('btn-create').addEventListener('click', (e) => {
             e.stopPropagation();
             audio.init();
             document.getElementById('menu').style.opacity = '0';
@@ -189,283 +441,609 @@ class SoundSynth {
                 document.getElementById('ui-overlay').style.display = 'block';
                 document.getElementById('gpu-monitor').style.display = 'block';
                 document.getElementById('crosshair').style.display = 'block';
+                
+                // Mobil cihaz algılandıysa veya zorlandıysa paneli göster
                 if (isMobileDevice) {
-                    document.getElementById('mobile-controls-panel').classList.remove('hidden');
+                    const mobilePanel = document.getElementById('mobile-controls-panel');
+                    if (mobilePanel) mobilePanel.classList.remove('hidden');
                 }
                 initGame();
             }, 700);
         });
 
-    // Oyuna Devam Et Butonu
-    document.getElementById('btn-resume').addEventListener('click',(e)=>
-    {
-        e.stopPropagation();isPaused=false;document.getElementById('pause-menu').classList.add('hidden');if(!isMobileDevice){requestSafePointerLock();}
-    });
-
-    // Menüye Geri Dön Butonu
-    document.getElementById('btn-back-to-menu').addEventListener('click',(e)=>
-    {
-        e.stopPropagation();
-        resetGameToMenu();
-    });
-
-    // Mobil Sağ Üst Menü / Pause Buton Dinleyicisi
-    document.getElementById('mobile-menu-btn').addEventListener('click',(e)=>
-    {
-        e.stopPropagation();if(gameActive){isPaused=true;document.getElementById('pause-menu').classList.remove('hidden');}
-    });
-
-    function requestSafePointerLock() {
-        if(gameActive&&!isMobileDevice&&document.pointerLockElement!==document.body){document.body.requestPointerLock();}
-    }
-
-    function generate32BitSeed() {
-        const seed8=Math.floor(10000000+Math.random()*90000000);let h=seed8^0xdeadbeef;h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);const seed32=(h^(h>>>16))>>>0;return{raw:seed8,seed32:seed32};
-    }
-
-    function initGame() {
-        gameActive=true;isPaused=false;
-
-        const seeds=generate32BitSeed();worldSeed=seeds.seed32;document.getElementById('ui-seed').innerText=seeds.raw+" ("+worldSeed+")";
-
-        simplex1=new SimplexNoise((worldSeed).toString());simplex2=new SimplexNoise((worldSeed+1).toString());simplex3=new SimplexNoise((worldSeed+2).toString());
-
-        scene=new THREE.Scene();
-
-        const skyColor=0xb0c0d0;scene.background=new THREE.Color(skyColor);scene.fog=new THREE.FogExp2(0x8a9ba8,0.025);
-
-        camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,1000);
-
-        renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:"high-performance"});renderer.setSize(window.innerWidth,window.innerHeight);renderer.setPixelRatio(Math.min(window.devicePixelRatio,isMobileDevice?1.2:2.0));document.body.appendChild(renderer.domElement);
-
-        sunLight=new THREE.DirectionalLight(0xffffff,1.2);sunLight.position.set(40,100,20);scene.add(sunLight);
-
-        ambientLight=new THREE.AmbientLight(0xffffff,0.75);scene.add(ambientLight);
-
-        // Güneş
-        const sunGeo=new THREE.SphereGeometry(6,16,16);const sunMat=new THREE.MeshBasicMaterial({color:0xfffebb,fog:false});const sunMesh=new THREE.Mesh(sunGeo,sunMat);sunMesh.position.set(120,180,60);scene.add(sunMesh);
-
-        initMaterials();
-
-        // Güvenli Spawn Tarama Algoritması
-        let spawnX=0;let spawnZ=0;let spawnY=25;let foundSafeSpawn=false;let attempts=0;
-
-        while(!foundSafeSpawn&&attempts<500){const rx=Math.floor((Math.random()-0.5)*200);const rz=Math.floor((Math.random()-0.5)*200);const h=getTerrainHeight(rx,rz);
-
-        const insideScary=(rx>=BIOME_MIN_X&&rx<=BIOME_MAX_X&&rz>=BIOME_MIN_Z&&rz<=BIOME_MAX_Z);
-
-        if(h>SEA_LEVEL+1&&!insideScary){spawnX=rx;spawnZ=rz;spawnY=h;foundSafeSpawn=true;}attempts++;}
-
-        player.spawnPos.set(spawnX,spawnY+3,spawnZ);player.pos.copy(player.spawnPos);
-
-        // Observer oluşturma
-        createCreepyObserver();
-
-        const spawnPx=Math.floor(spawnX/CHUNK_SIZE);const spawnPz=Math.floor(spawnZ/CHUNK_SIZE);for(let x=spawnPx-VIEW_DISTANCE;x<=spawnPx+VIEW_DISTANCE;x++){for(let z=spawnPz-VIEW_DISTANCE;z<=spawnPz+VIEW_DISTANCE;z++){createChunk(x,z);}}
-
-        if(!isMobileDevice){document.addEventListener('pointerlockchange',handlePointerLockChange);requestSafePointerLock();}else{initMobileControls();}
-
-        animate();
-    }
-
-    function createCreepyObserver() {
-        const observerY=getTerrainHeight(60,60);creepyObserver=new THREE.Group();creepyObserver.position.set(60,observerY,60);
-
-        const bodyGeo=new THREE.BoxGeometry(0.5,2.8,0.5);const bodyMat=new THREE.MeshBasicMaterial({color:0x050505});const bodyMesh=new THREE.Mesh(bodyGeo,bodyMat);bodyMesh.position.y=1.4;creepyObserver.add(bodyMesh);
-
-        const headGeo=new THREE.BoxGeometry(0.7,0.7,0.7);const headMesh=new THREE.Mesh(headGeo,bodyMat);headMesh.position.y=3.15;creepyObserver.add(headMesh);
-
-        const eyeGeo=new THREE.BoxGeometry(0.12,0.12,0.12);const eyeMat=new THREE.MeshBasicMaterial({color:0xff0000});
-
-        const leftEye=new THREE.Mesh(eyeGeo,eyeMat);leftEye.position.set(-0.18,3.2,0.36);
-
-        const rightEye=new THREE.Mesh(eyeGeo,eyeMat);rightEye.position.set(0.18,3.2,0.36);
-
-        creepyObserver.add(leftEye);creepyObserver.add(rightEye);
-
-        scene.add(creepyObserver);
-    }
-
-    function handlePointerLockChange() {
-        if(!gameActive)return;
-
-        if(document.pointerLockElement===document.body){isPaused=false;document.getElementById('pause-menu').classList.add('hidden');}else{isPaused=true;document.getElementById('pause-menu').classList.remove('hidden');for(let key in keys){keys[key]=false;}}
-    }
-
-    function resetGameToMenu() {
-        gameActive=false;isPaused=false;
-
-        if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=null;}
-
-        if(!isMobileDevice){document.removeEventListener('pointerlockchange',handlePointerLockChange);}stopScaryGlitches();
-
-        if(renderer){renderer.dispose();if(renderer.domElement&&renderer.domElement.parentNode){renderer.domElement.parentNode.removeChild(renderer.domElement);}}
-
-        worldBlocks.clear();chunkMeshes.clear();generatedChunks.clear();grayBiomeTrees=[];activeChunks=[];creepyObserver=null;
-
-        document.getElementById('pause-menu').classList.add('hidden');document.getElementById('ui-overlay').style.display='none';document.getElementById('gpu-monitor').style.display='none';document.getElementById('crosshair').style.display='none';document.getElementById('mobile-controls-panel').classList.add('hidden');
-
-        const menu=document.getElementById('menu');menu.style.display='flex';setTimeout(()=>{menu.style.opacity='1';},50);
-    }
-
-    let matList;
-
-    function initMaterials() {
-        const grassTop=new THREE.MeshLambertMaterial({color:0x2e8b57});const grassSide=new THREE.MeshLambertMaterial({color:0x8b5a2b});const dirtMat=new THREE.MeshLambertMaterial({color:0x5c4033});const stoneMat=new THREE.MeshLambertMaterial({color:0x708090});
-
-        const copyGrassTop=new THREE.MeshLambertMaterial({color:0x3a3a3a});const copyGrassSide=new THREE.MeshLambertMaterial({color:0x222222});const copyDirtMat=new THREE.MeshLambertMaterial({color:0x1f1f1f});const copyStoneMat=new THREE.MeshLambertMaterial({color:0x141414});
-
-        matList={grass:[grassSide,grassSide,grassTop,grassSide,grassSide,grassSide],dirt:dirtMat,stone:stoneMat,wood:new THREE.MeshLambertMaterial({color:0x50301a}),leaf:new THREE.MeshLambertMaterial({color:0x1b4d3e,transparent:true,opacity:0.95}),water:new THREE.MeshLambertMaterial({color:0x1d4ed8,transparent:true,opacity:0.65}),
-
-        grayGrass:[copyGrassSide,copyGrassSide,copyGrassTop,copyGrassSide,copyGrassSide,copyGrassSide],grayDirt:copyDirtMat,grayStone:copyStoneMat,grayWood:new THREE.MeshLambertMaterial({color:0x1a1a1a}),grayLeaf:new THREE.MeshLambertMaterial({color:0x2e2e2e,transparent:true,opacity:0.9})};
-    }
-
-    function getTerrainHeight(x,z) {
-        const inBiome=(x>=BIOME_MIN_X&&x<=BIOME_MAX_X&&z>=BIOME_MIN_Z&&z<=BIOME_MAX_Z);const noise1=simplex1.noise2D(x*0.012,z*0.012)*16;const noise2=simplex2.noise2D(x*0.06,z*0.06)*3;
-
-        const distFromCenter=Math.sqrt(x*x+z*z);let baseHeight=16;
-
-        if(distFromCenter<10){return baseHeight;}
-
-        let finalHeight=Math.floor(baseHeight+noise1+noise2);
-
-        if(inBiome){if(finalHeight<=SEA_LEVEL){finalHeight=SEA_LEVEL+1;}}return finalHeight;
-    }
-
-    function generateChunkData(cx,cz) {
-        const key=`${cx},${cz}`;if(generatedChunks.has(key))return;generatedChunks.add(key);
-
-        const isChunkInGrayBiome=(wx,wz)=>{return(wx>=BIOME_MIN_X&&wx<=BIOME_MAX_X&&wz>=BIOME_MIN_Z&&wz<=BIOME_MAX_Z);};
-
-        for(let x=0;x<CHUNK_SIZE;x++){for(let z=0;z<CHUNK_SIZE;z++){const wx=cx*CHUNK_SIZE+x;const wz=cz*CHUNK_SIZE+z;const h=getTerrainHeight(wx,wz);const isGray=isChunkInGrayBiome(wx,wz);
-
-        if(!isGray&&h<SEA_LEVEL){for(let y=h+1;y<=SEA_LEVEL;y++){setBlock(wx,y,wz,'water');}}
-
-        if(isGray){setBlock(wx,h,wz,'grayGrass');for(let y=1;y<=4;y++){setBlock(wx,h-y,wz,'grayDirt');}for(let y=5;y<=20;y++){setBlock(wx,h-y,wz,'grayStone');}}else{setBlock(wx,h,wz,'grass');for(let y=1;y<=4;y++){setBlock(wx,h-y,wz,'dirt');}for(let y=5;y<=20;y++){setBlock(wx,h-y,wz,'stone');}}
-
-        // Ağaç yerleşimi
-        const noise3Val=simplex3.noise2D(wx*0.05,wz*0.05);if(Math.abs(wx)>8&&Math.abs(wz)>8&&h>=SEA_LEVEL&&noise3Val>0.4&&Math.random()<0.06){const trunkType=isGray?'grayWood':'wood';const leafType=isGray?'grayLeaf':'leaf';
-
-        const treeGroup=new THREE.Group();treeGroup.position.set(wx,h,wz);
-
-        const woodGeo=new THREE.BoxGeometry(0.8,6,0.8);const woodMesh=new THREE.Mesh(woodGeo,matList[trunkType]);woodMesh.position.y=3;treeGroup.add(woodMesh);
-
-        const leafGeo=new THREE.BoxGeometry(4,3,4);const leafMesh=new THREE.Mesh(leafGeo,matList[leafType]);leafMesh.position.y=5.5;treeGroup.add(leafMesh);
-
-        for(let i=1;i<=6;i++)setBlock(wx,h+i,wz,trunkType);for(let ly=4;ly<=7;ly++){for(let lx=-2;lx<=2;lx++){for(let lz=-2;lz<=2;lz++){setBlock(wx+lx,h+ly,wz+lz,leafType);}}}
-
-        if(isGray){treeGroup.name=`tree-${wx}-${wz}`;scene.add(treeGroup);grayBiomeTrees.push({chunkKey:key,obj:treeGroup,targetY:h-7,currentY:h,startY:h,isSunk:false});}else{scene.add(treeGroup);grayBiomeTrees.push({chunkKey:key,obj:treeGroup,targetY:h,currentY:h,startY:h,isSunk:false});}}}}
-    }
-
-    function createChunk(cx,cz) {
-        const key=`${cx},${cz}`;if(chunkMeshes.has(key))return;
-
-        generateChunkData(cx,cz);
-
-        const group=new THREE.Group();const geo=new THREE.BoxGeometry(1,1,1);
-
-        const blocks={grass:[],dirt:[],stone:[],wood:[],leaf:[],water:[],grayGrass:[],grayDirt:[],grayStone:[],grayWood:[],grayLeaf:[]};
-
-        for(let x=0;x<CHUNK_SIZE;x++){for(let z=0;z<CHUNK_SIZE;z++){const wx=cx*CHUNK_SIZE+x;const wz=cz*CHUNK_SIZE+z;
-
-        for(let y=0;y<=45;y++){const type=getBlock(wx,y,wz);if(type&&blocks[type]!==undefined){blocks[type].push(new THREE.Vector3(wx,y,wz));}}}}
-
-        Object.keys(blocks).forEach(type=>{const list=blocks[type];if(list.length===0)return;
-
-        let material=matList[type];if(type==='grass')material=matList.grass;if(type==='grayGrass')material=matList.grayGrass;
-
-        const inst=new THREE.InstancedMesh(geo,material,list.length);const mat=new THREE.Matrix4();list.forEach((pos,i)=>{mat.setPosition(pos);inst.setMatrixAt(i,mat);});group.add(inst);});
-
-        scene.add(group);chunkMeshes.set(key,group);
-    }
-
-    function setBlock(x,y,z,type) {
-        worldBlocks.set(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`,type);
-    }
-
-    function getBlock(x,y,z) {
-        return worldBlocks.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
-    }
-
-    function rebuildChunk(cx,cz) {
-        const key=`${cx},${cz}`;if(chunkMeshes.has(key)){scene.remove(chunkMeshes.get(key));chunkMeshes.delete(key);}createChunk(cx,cz);
-    }
-
-    function checkCollision(x,y,z) {
-        const r=player.radius;const h=player.height;for(let ox of[-r,r]){for(let oz of[-r,r]){for(let oy of[0.05,h*0.5,h-0.05]){const block=getBlock(x+ox,y+oy,z+oz);if(block&&block!=='water')return true;}}}return false;
-    }
-
-    // Fizik ve Hareket Motoru (Mobil ve Klavye Girişlerini Birleştirir)
-    function updatePhysics() {
-        if(isPaused)return;
-
-        const currentBlock=getBlock(player.pos.x,player.pos.y+0.4,player.pos.z);player.inWater=(currentBlock==='water');
-
-        // Koşma/Sprinting Kontrolü (Mobil ve Klavye Birleşik)
-        player.isSprinting=keys['ShiftLeft']||keys['ShiftRight']||mobileKeys.sprint;player.isCrouching=keys['ControlLeft']||keys['ControlRight'];
-
-        let speedMultiplier=1.0;if(player.isSprinting&&!player.isCrouching)speedMultiplier=player.runMultiplier;if(player.isCrouching){speedMultiplier=player.crouchMultiplier;player.height=1.0;}else{player.height=1.8;}
-
-        const moveDir=new THREE.Vector3();
-
-        if(isMobileDevice){
-        // Sanal Joystick değerlerini alıyoruz
-        if(mobileKeys.forward!==0||mobileKeys.backward!==0||mobileKeys.left!==0||mobileKeys.right!==0){moveDir.z=mobileKeys.backward-mobileKeys.forward;moveDir.x=mobileKeys.right-mobileKeys.left;}}else{if(keys['KeyW'])moveDir.z-=1;if(keys['KeyS'])moveDir.z+=1;if(keys['KeyA'])moveDir.x-=1;if(keys['KeyD'])moveDir.x+=1;}
-
-        moveDir.applyQuaternion(camera.quaternion);moveDir.y=0;moveDir.normalize();
-
-        let currentSpeed=player.inWater?player.speed*0.4:player.speed;currentSpeed*=speedMultiplier;
-
-        const dx=moveDir.x*currentSpeed;const dz=moveDir.z*currentSpeed;
-
-        // X Ekseninde Çarpışma ve Otomatik Tırmanma
-        if(dx!==0){player.pos.x+=dx;if(checkCollision(player.pos.x,player.pos.y,player.pos.z)){if(!player.isCrouching&&!checkCollision(player.pos.x,player.pos.y+1.1,player.pos.z)){player.pos.y+=1.0;}else{player.pos.x-=dx;}}}
-
-        // Z Ekseninde Çarpışma ve Otomatik Tırmanma
-        if(dz!==0){player.pos.z+=dz;if(checkCollision(player.pos.x,player.pos.y,player.pos.z)){if(!player.isCrouching&&!checkCollision(player.pos.x,player.pos.y+1.1,player.pos.z)){player.pos.y+=1.0;}else{player.pos.z-=dz;}}}
-
-        // Dikey Hız ve Sarsıntısız Zemin Algılama Döngüsü
-        const gravity=player.inWater?0.003:0.008;
-
-        const onGroundNow=checkCollision(player.pos.x,player.pos.y-0.05,player.pos.z);if(onGroundNow){player.onGround=true;if(player.vel.y<0)player.vel.y=0;}else{player.onGround=false;player.vel.y-=gravity;}
-
-        player.pos.y+=player.vel.y;
-
-        // Zemin ve Tavan Hizalaması
-        if(checkCollision(player.pos.x,player.pos.y,player.pos.z)){if(player.vel.y<0){player.pos.y=Math.ceil(player.pos.y);while(checkCollision(player.pos.x,player.pos.y,player.pos.z)){player.pos.y+=0.01;}player.onGround=true;player.vel.y=0;}else if(player.vel.y>0){player.pos.y=Math.floor(player.pos.y);while(checkCollision(player.pos.x,player.pos.y,player.pos.z)){player.pos.y-=0.01;}player.vel.y=0;}}
-
-        // Zıplama & Suda Yüzme / Üste Çıkma
-        const jumpActionPressed=keys['Space']||mobileKeys.jump;if(jumpActionPressed){if(player.onGround){player.vel.y=player.jumpForce;player.onGround=false;}else if(player.inWater){player.vel.y=0.06; // Suda
-                                                                                                                                                                                                         // basılı
-                                                                                                                                                                                                         // tutulduğunda
-                                                                                                                                                                                                         // yüzeyi
-                                                                                                                                                                                                         // koruyup
-                                                                                                                                                                                                         // tırmanır
-        }}
-
-        // Kamera takip mekanizması
-        const cameraTargetHeight=player.isCrouching?0.8:1.6;camera.position.x=player.pos.x;camera.position.z=player.pos.z;camera.position.y+=(player.pos.y+cameraTargetHeight-camera.position.y)*0.3;
-    }
-
-    // Klavyeden Giriş Kontrolleri
-    window.addEventListener('keydown',e=>
-
-    {
-        if(!gameActive||isPaused)return;keys[e.code]=true;if(e.code==='KeyI'||e.code==='Keyı'){player.pos.copy(player.spawnPos);player.vel.set(0,0,0);audio.playBeep(250,'square',0.3,0.2);}
-    });
-
-    window.addEventListener('keyup',e=>
-    {
-        keys[e.code] = false;
-    });
-
-    window.addEventListener('blur',()=>
-    {
-        for(let key in keys){keys[key]=false;}mobileKeys.sprint=false;mobileKeys.jump=false;
-    });
-
-    // Masaüstü Fare Kamerası
-    function onMouseMove(e) {
+        // Oyuna Devam Et Butonu
+        document.getElementById('btn-resume').addEventListener('click', (e) => {
+            e.stopPropagation();
+            isPaused = false;
+            document.getElementById('pause-menu').classList.add('hidden');
+            if (!isMobileDevice) {
+                requestSafePointerLock();
+            }
+        });
+
+        // Menüye Geri Dön Butonu
+        document.getElementById('btn-back-to-menu').addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetGameToMenu();
+        });
+
+        // Mobil Sağ Üst Menü / Pause Buton Dinleyicisi
+        document.getElementById('mobile-menu-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (gameActive) {
+                isPaused = true;
+                const pauseMenu = document.getElementById('pause-menu');
+                if (pauseMenu) pauseMenu.classList.remove('hidden');
+            }
+        });
+
+        function requestSafePointerLock() {
+            if (gameActive && !isMobileDevice && document.pointerLockElement !== document.body) {
+                document.body.requestPointerLock();
+            }
+        }
+
+        function generate32BitSeed() {
+            const seed8 = Math.floor(10000000 + Math.random() * 90000000);
+            let h = seed8 ^ 0xdeadbeef;
+            h = Math.imul(h ^ (h >>> 16), 2246822507);
+            h = Math.imul(h ^ (h >>> 13), 3266489909);
+            const seed32 = (h ^ (h >>> 16)) >>> 0;
+            return { raw: seed8, seed32: seed32 };
+        }
+
+        function initGame() {
+            gameActive = true;
+            isPaused = false;
+
+            const seeds = generate32BitSeed();
+            worldSeed = seeds.seed32;
+            const seedEl = document.getElementById('ui-seed');
+            if (seedEl) seedEl.innerText = seeds.raw + " (" + worldSeed + ")";
+
+            simplex1 = new SimplexNoise((worldSeed).toString());
+            simplex2 = new SimplexNoise((worldSeed + 1).toString());
+            simplex3 = new SimplexNoise((worldSeed + 2).toString());
+
+            scene = new THREE.Scene();
+            
+            const skyColor = 0xb0c0d0; 
+            scene.background = new THREE.Color(skyColor);
+            scene.fog = new THREE.FogExp2(0x8a9ba8, 0.025);
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileDevice ? 1.2 : 2.0));
+            document.body.appendChild(renderer.domElement);
+
+            sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(40, 100, 20);
+            scene.add(sunLight);
+
+            ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            scene.add(ambientLight);
+
+            // Güneş
+            const sunGeo = new THREE.SphereGeometry(6, 16, 16);
+            const sunMat = new THREE.MeshBasicMaterial({ color: 0xfffebb, fog: false });
+            const sunMesh = new THREE.Mesh(sunGeo, sunMat);
+            sunMesh.position.set(120, 180, 60);
+            scene.add(sunMesh);
+
+            initMaterials();
+            
+            // Güvenli Spawn Tarama Algoritması
+            let spawnX = 0;
+            let spawnZ = 0;
+            let spawnY = 25;
+            let foundSafeSpawn = false;
+            let attempts = 0;
+
+            while (!foundSafeSpawn && attempts < 500) {
+                const rx = Math.floor((Math.random() - 0.5) * 200);
+                const rz = Math.floor((Math.random() - 0.5) * 200);
+                const h = getTerrainHeight(rx, rz);
+
+                const insideScary = (rx >= BIOME_MIN_X && rx <= BIOME_MAX_X && rz >= BIOME_MIN_Z && rz <= BIOME_MAX_Z);
+                
+                if (h > SEA_LEVEL + 1 && !insideScary) {
+                    spawnX = rx;
+                    spawnZ = rz;
+                    spawnY = h;
+                    foundSafeSpawn = true;
+                }
+                attempts++;
+            }
+
+            player.spawnPos.set(spawnX, spawnY + 3, spawnZ);
+            player.pos.copy(player.spawnPos);
+
+            // Observer oluşturma
+            createCreepyObserver();
+
+            const spawnPx = Math.floor(spawnX / CHUNK_SIZE);
+            const spawnPz = Math.floor(spawnZ / CHUNK_SIZE);
+            for (let x = spawnPx - VIEW_DISTANCE; x <= spawnPx + VIEW_DISTANCE; x++) {
+                for (let z = spawnPz - VIEW_DISTANCE; z <= spawnPz + VIEW_DISTANCE; z++) {
+                    createChunk(x, z);
+                }
+            }
+
+            // Mobil ve Masaüstü kontrollerinin ikisi de arka planda her zaman dinlenir (Hibrit Sistem)
+            document.addEventListener('pointerlockchange', handlePointerLockChange);
+            initMobileControls();
+
+            if (!isMobileDevice) {
+                requestSafePointerLock();
+            }
+            
+            animate();
+        }
+
+        function createCreepyObserver() {
+            const observerY = getTerrainHeight(60, 60);
+            creepyObserver = new THREE.Group();
+            creepyObserver.position.set(60, observerY, 60);
+
+            const bodyGeo = new THREE.BoxGeometry(0.5, 2.8, 0.5);
+            const bodyMat = new THREE.MeshBasicMaterial({ color: 0x050505 }); 
+            const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+            bodyMesh.position.y = 1.4;
+            creepyObserver.add(bodyMesh);
+
+            const headGeo = new THREE.BoxGeometry(0.7, 0.7, 0.7);
+            const headMesh = new THREE.Mesh(headGeo, bodyMat);
+            headMesh.position.y = 3.15;
+            creepyObserver.add(headMesh);
+
+            const eyeGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            
+            const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
+            leftEye.position.set(-0.18, 3.2, 0.36);
+            
+            const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
+            rightEye.position.set(0.18, 3.2, 0.36);
+
+            creepyObserver.add(leftEye);
+            creepyObserver.add(rightEye);
+
+            scene.add(creepyObserver);
+        }
+
+        function handlePointerLockChange() {
+            if (!gameActive || isMobileDevice) return;
+
+            if (document.pointerLockElement === document.body) {
+                isPaused = false;
+                const pauseMenu = document.getElementById('pause-menu');
+                if (pauseMenu) pauseMenu.classList.add('hidden');
+            } else {
+                isPaused = true;
+                const pauseMenu = document.getElementById('pause-menu');
+                if (pauseMenu) pauseMenu.classList.remove('hidden');
+                for (let key in keys) {
+                    keys[key] = false;
+                }
+            }
+        }
+
+        function resetGameToMenu() {
+            gameActive = false;
+            isPaused = false;
+            
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            document.removeEventListener('pointerlockchange', handlePointerLockChange);
+            stopScaryGlitches();
+
+            if (renderer) {
+                renderer.dispose();
+                if (renderer.domElement && renderer.domElement.parentNode) {
+                    renderer.domElement.parentNode.removeChild(renderer.domElement);
+                }
+            }
+
+            worldBlocks.clear();
+            chunkMeshes.clear();
+            generatedChunks.clear();
+            grayBiomeTrees = [];
+            activeChunks = [];
+            creepyObserver = null;
+
+            const pauseMenu = document.getElementById('pause-menu');
+            if (pauseMenu) pauseMenu.classList.add('hidden');
+            document.getElementById('ui-overlay').style.display = 'none';
+            document.getElementById('gpu-monitor').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
+            const mobilePanel = document.getElementById('mobile-controls-panel');
+            if (mobilePanel) mobilePanel.classList.add('hidden');
+            
+            const menu = document.getElementById('menu');
+            if (menu) {
+                menu.style.display = 'flex';
+                setTimeout(() => {
+                    menu.style.opacity = '1';
+                }, 50);
+            }
+        }
+
+        let matList;
+        function initMaterials() {
+            const grassTop = new THREE.MeshLambertMaterial({color: 0x2e8b57}); 
+            const grassSide = new THREE.MeshLambertMaterial({color: 0x8b5a2b}); 
+            const dirtMat = new THREE.MeshLambertMaterial({color: 0x5c4033}); 
+            const stoneMat = new THREE.MeshLambertMaterial({color: 0x708090});
+            
+            const copyGrassTop = new THREE.MeshLambertMaterial({color: 0x3a3a3a}); 
+            const copyGrassSide = new THREE.MeshLambertMaterial({color: 0x222222}); 
+            const copyDirtMat = new THREE.MeshLambertMaterial({color: 0x1f1f1f}); 
+            const copyStoneMat = new THREE.MeshLambertMaterial({color: 0x141414});
+
+            matList = {
+                grass: [grassSide, grassSide, grassTop, grassSide, grassSide, grassSide],
+                dirt: dirtMat, 
+                stone: stoneMat,
+                wood: new THREE.MeshLambertMaterial({color: 0x50301a}),
+                leaf: new THREE.MeshLambertMaterial({color: 0x1b4d3e, transparent: true, opacity: 0.95}),
+                water: new THREE.MeshLambertMaterial({color: 0x1d4ed8, transparent: true, opacity: 0.65}),
+                
+                grayGrass: [copyGrassSide, copyGrassSide, copyGrassTop, copyGrassSide, copyGrassSide, copyGrassSide],
+                grayDirt: copyDirtMat,
+                grayStone: copyStoneMat,
+                grayWood: new THREE.MeshLambertMaterial({color: 0x1a1a1a}),
+                grayLeaf: new THREE.MeshLambertMaterial({color: 0x2e2e2e, transparent: true, opacity: 0.9})
+            };
+        }
+
+        function getTerrainHeight(x, z) {
+            const inBiome = (x >= BIOME_MIN_X && x <= BIOME_MAX_X && z >= BIOME_MIN_Z && z <= BIOME_MAX_Z);
+            const noise1 = simplex1.noise2D(x * 0.012, z * 0.012) * 16;
+            const noise2 = simplex2.noise2D(x * 0.06, z * 0.06) * 3;
+            
+            const distFromCenter = Math.sqrt(x*x + z*z);
+            let baseHeight = 16;
+            
+            if (distFromCenter < 10) {
+                return baseHeight; 
+            }
+
+            let finalHeight = Math.floor(baseHeight + noise1 + noise2);
+
+            if (inBiome) {
+                if (finalHeight <= SEA_LEVEL) {
+                    finalHeight = SEA_LEVEL + 1; 
+                }
+            }
+            return finalHeight;
+        }
+
+        function generateChunkData(cx, cz) {
+            const key = `${cx},${cz}`;
+            if (generatedChunks.has(key)) return;
+            generatedChunks.add(key);
+
+            const isChunkInGrayBiome = (wx, wz) => {
+                return (wx >= BIOME_MIN_X && wx <= BIOME_MAX_X && wz >= BIOME_MIN_Z && wz <= BIOME_MAX_Z);
+            };
+
+            for (let x = 0; x < CHUNK_SIZE; x++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    const wx = cx * CHUNK_SIZE + x;
+                    const wz = cz * CHUNK_SIZE + z;
+                    const h = getTerrainHeight(wx, wz);
+                    const isGray = isChunkInGrayBiome(wx, wz);
+
+                    if (!isGray && h < SEA_LEVEL) {
+                        for (let y = h + 1; y <= SEA_LEVEL; y++) {
+                            setBlock(wx, y, wz, 'water');
+                        }
+                    }
+
+                    if (isGray) {
+                        setBlock(wx, h, wz, 'grayGrass');
+                        for(let y = 1; y <= 4; y++) {
+                            setBlock(wx, h - y, wz, 'grayDirt');
+                        }
+                        for(let y = 5; y <= 20; y++) {
+                            setBlock(wx, h - y, wz, 'grayStone');
+                        }
+                    } else {
+                        setBlock(wx, h, wz, 'grass');
+                        for(let y = 1; y <= 4; y++) {
+                            setBlock(wx, h - y, wz, 'dirt');
+                        }
+                        for(let y = 5; y <= 20; y++) {
+                            setBlock(wx, h - y, wz, 'stone');
+                        }
+                    }
+
+                    // Ağaç yerleşimi
+                    const noise3Val = simplex3.noise2D(wx * 0.05, wz * 0.05);
+                    if (Math.abs(wx) > 8 && Math.abs(wz) > 8 && h >= SEA_LEVEL && noise3Val > 0.4 && Math.random() < 0.06) {
+                        const trunkType = isGray ? 'grayWood' : 'wood';
+                        const leafType = isGray ? 'grayLeaf' : 'leaf';
+
+                        const treeGroup = new THREE.Group();
+                        treeGroup.position.set(wx, h, wz);
+
+                        const woodGeo = new THREE.BoxGeometry(0.8, 6, 0.8);
+                        const woodMesh = new THREE.Mesh(woodGeo, matList[trunkType]);
+                        woodMesh.position.y = 3; 
+                        treeGroup.add(woodMesh);
+
+                        const leafGeo = new THREE.BoxGeometry(4, 3, 4);
+                        const leafMesh = new THREE.Mesh(leafGeo, matList[leafType]);
+                        leafMesh.position.y = 5.5;
+                        treeGroup.add(leafMesh);
+
+                        for(let i = 1; i <= 6; i++) setBlock(wx, h + i, wz, trunkType);
+                        for(let ly = 4; ly <= 7; ly++) {
+                            for(let lx = -2; lx <= 2; lx++) {
+                                for(let lz = -2; lz <= 2; lz++) {
+                                    setBlock(wx + lx, h + ly, wz + lz, leafType);
+                                }
+                            }
+                        }
+
+                        if (isGray) {
+                            treeGroup.name = `tree-${wx}-${wz}`;
+                            scene.add(treeGroup);
+                            grayBiomeTrees.push({
+                                chunkKey: key,
+                                obj: treeGroup,
+                                targetY: h - 7, 
+                                currentY: h,
+                                startY: h,
+                                isSunk: false
+                            });
+                        } else {
+                            scene.add(treeGroup);
+                            grayBiomeTrees.push({
+                                chunkKey: key,
+                                obj: treeGroup,
+                                targetY: h,
+                                currentY: h,
+                                startY: h,
+                                isSunk: false
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        function createChunk(cx, cz) {
+            const key = `${cx},${cz}`;
+            if (chunkMeshes.has(key)) return;
+
+            generateChunkData(cx, cz);
+
+            const group = new THREE.Group();
+            const geo = new THREE.BoxGeometry(1, 1, 1);
+            
+            const blocks = { 
+                grass: [], dirt: [], stone: [], wood: [], leaf: [], water: [],
+                grayGrass: [], grayDirt: [], grayStone: [], grayWood: [], grayLeaf: []
+            };
+
+            for (let x = 0; x < CHUNK_SIZE; x++) {
+                for (let z = 0; z < CHUNK_SIZE; z++) {
+                    const wx = cx * CHUNK_SIZE + x;
+                    const wz = cz * CHUNK_SIZE + z;
+                    
+                    for (let y = 0; y <= 45; y++) {
+                        const type = getBlock(wx, y, wz);
+                        if (type && blocks[type] !== undefined) {
+                            blocks[type].push(new THREE.Vector3(wx, y, wz));
+                        }
+                    }
+                }
+            }
+
+            Object.keys(blocks).forEach(type => {
+                const list = blocks[type];
+                if (list.length === 0) return;
+                
+                let material = matList[type];
+                if(type === 'grass') material = matList.grass;
+                if(type === 'grayGrass') material = matList.grayGrass;
+
+                const inst = new THREE.InstancedMesh(geo, material, list.length);
+                const mat = new THREE.Matrix4();
+                list.forEach((pos, i) => {
+                    mat.setPosition(pos);
+                    inst.setMatrixAt(i, mat);
+                });
+                group.add(inst);
+            });
+
+            scene.add(group);
+            chunkMeshes.set(key, group);
+        }
+
+        function setBlock(x, y, z, type) {
+            worldBlocks.set(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`, type);
+        }
+
+        function getBlock(x, y, z) {
+            return worldBlocks.get(`${Math.floor(x)},${Math.floor(y)},${Math.floor(z)}`);
+        }
+
+        function rebuildChunk(cx, cz) {
+            const key = `${cx},${cz}`;
+            if (chunkMeshes.has(key)) {
+                scene.remove(chunkMeshes.get(key));
+                chunkMeshes.delete(key);
+            }
+            createChunk(cx, cz);
+        }
+
+        function checkCollision(x, y, z) {
+            const r = player.radius;
+            const h = player.height;
+            for (let ox of [-r, r]) {
+                for (let oz of [-r, r]) {
+                    for (let oy of [0.05, h * 0.5, h - 0.05]) {
+                        const block = getBlock(x + ox, y + oy, z + oz);
+                        if (block && block !== 'water') return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Fizik ve Hareket Motoru (Mobil ve Klavye Girişlerini Birleştirir)
+        function updatePhysics() {
+            if (isPaused) return;
+
+            const currentBlock = getBlock(player.pos.x, player.pos.y + 0.4, player.pos.z);
+            player.inWater = (currentBlock === 'water');
+
+            // Koşma/Sprinting Kontrolü (Mobil ve Klavye Birleşik)
+            player.isSprinting = keys['ShiftLeft'] || keys['ShiftRight'] || mobileKeys.sprint;
+            player.isCrouching = keys['ControlLeft'] || keys['ControlRight'];
+
+            let speedMultiplier = 1.0;
+            if (player.isSprinting && !player.isCrouching) speedMultiplier = player.runMultiplier;
+            if (player.isCrouching) {
+                speedMultiplier = player.crouchMultiplier;
+                player.height = 1.0; 
+            } else {
+                player.height = 1.8;
+            }
+
+            const moveDir = new THREE.Vector3();
+
+            // Hibrit Giriş Sistemi: Hem klavye hem de mobil sanal joystiğin ikisini de aynı anda destekler!
+            let moveX = 0;
+            let moveZ = 0;
+
+            if (keys['KeyW']) moveZ -= 1;
+            if (keys['KeyS']) moveZ += 1;
+            if (keys['KeyA']) moveX -= 1;
+            if (keys['KeyD']) moveX += 1;
+
+            if (mobileKeys.forward !== 0 || mobileKeys.backward !== 0 || mobileKeys.left !== 0 || mobileKeys.right !== 0) {
+                moveZ = mobileKeys.backward - mobileKeys.forward;
+                moveX = mobileKeys.right - mobileKeys.left;
+            }
+
+            moveDir.z = moveZ;
+            moveDir.x = moveX;
+            
+            moveDir.applyQuaternion(camera.quaternion);
+            moveDir.y = 0; 
+            moveDir.normalize();
+
+            let currentSpeed = player.inWater ? player.speed * 0.4 : player.speed;
+            currentSpeed *= speedMultiplier;
+
+            const dx = moveDir.x * currentSpeed;
+            const dz = moveDir.z * currentSpeed;
+
+            // X Ekseninde Çarpışma ve Otomatik Tırmanma
+            if (dx !== 0) {
+                player.pos.x += dx;
+                if (checkCollision(player.pos.x, player.pos.y, player.pos.z)) {
+                    if (!player.isCrouching && !checkCollision(player.pos.x, player.pos.y + 1.1, player.pos.z)) {
+                        player.pos.y += 1.0;
+                    } else {
+                        player.pos.x -= dx;
+                    }
+                }
+            }
+
+            // Z Ekseninde Çarpışma ve Otomatik Tırmanma
+            if (dz !== 0) {
+                player.pos.z += dz;
+                if (checkCollision(player.pos.x, player.pos.y, player.pos.z)) {
+                    if (!player.isCrouching && !checkCollision(player.pos.x, player.pos.y + 1.1, player.pos.z)) {
+                        player.pos.y += 1.0;
+                    } else {
+                        player.pos.z -= dz;
+                    }
+                }
+            }
+
+            // Dikey Hız ve Sarsıntısız Zemin Algılama Döngüsü
+            const gravity = player.inWater ? 0.003 : 0.008;
+            
+            const onGroundNow = checkCollision(player.pos.x, player.pos.y - 0.05, player.pos.z);
+            if (onGroundNow) {
+                player.onGround = true;
+                if (player.vel.y < 0) player.vel.y = 0;
+            } else {
+                player.onGround = false;
+                player.vel.y -= gravity;
+            }
+
+            player.pos.y += player.vel.y;
+
+            // Zemin ve Tavan Hizalaması
+            if (checkCollision(player.pos.x, player.pos.y, player.pos.z)) {
+                if (player.vel.y < 0) {
+                    player.pos.y = Math.ceil(player.pos.y);
+                    while (checkCollision(player.pos.x, player.pos.y, player.pos.z)) {
+                        player.pos.y += 0.01;
+                    }
+                    player.onGround = true;
+                    player.vel.y = 0;
+                } else if (player.vel.y > 0) {
+                    player.pos.y = Math.floor(player.pos.y);
+                    while (checkCollision(player.pos.x, player.pos.y, player.pos.z)) {
+                        player.pos.y -= 0.01;
+                    }
+                    player.vel.y = 0;
+                }
+            }
+
+            // Zıplama & Suda Yüzme / Üste Çıkma
+            const jumpActionPressed = keys['Space'] || mobileKeys.jump;
+            if (jumpActionPressed) {
+                if (player.onGround) {
+                    player.vel.y = player.jumpForce;
+                    player.onGround = false;
+                } else if (player.inWater) {
+                    player.vel.y = 0.06; // Suda basılı tutulduğunda yüzeyi koruyup tırmanır
+                }
+            }
+
+            // Kamera takip mekanizması
+            const cameraTargetHeight = player.isCrouching ? 0.8 : 1.6;
+            camera.position.x = player.pos.x;
+            camera.position.z = player.pos.z;
+            camera.position.y += (player.pos.y + cameraTargetHeight - camera.position.y) * 0.3;
+        }
+
+        // Klavyeden Giriş Kontrolleri
+        window.addEventListener('keydown', e => {
+            if (!gameActive || isPaused) return;
+            keys[e.code] = true;
+            if (e.code === 'KeyI' || e.code === 'Keyı') {
+                player.pos.copy(player.spawnPos);
+                player.vel.set(0, 0, 0);
+                audio.playBeep(250, 'square', 0.3, 0.2);
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            keys[e.code] = false;
+        });
+        
+        window.addEventListener('blur', () => {
+            for (let key in keys) { keys[key] = false; }
+            mobileKeys.sprint = false;
+            mobileKeys.jump = false;
+        });
+        
+        // Masaüstü Fare Kamerası
+        function onMouseMove(e) {
             if (gameActive && !isPaused && !isMobileDevice && document.pointerLockElement === document.body) {
                 camera.rotation.y -= e.movementX * 0.0022;
                 camera.rotation.x -= e.movementY * 0.0022;
@@ -482,124 +1060,269 @@ class SoundSynth {
         });
 
         // Masaüstü Blok Kırma ve Koyma Klikleri
-    function onMouseDown(e) {
+        function onMouseDown(e) {
             if (!gameActive || isPaused || isMobileDevice || document.pointerLockElement !== document.body) return;
             triggerWorldInteraction(e.button === 0 ? 'break' : 'place');
         }
         window.addEventListener('mousedown', onMouseDown);
 
         // Ortak Blok Kırma/Koyma Fonksiyonu (Mobil & Masaüstü için ortak çalışır)
-    function triggerWorldInteraction(type) {
-        const raycaster=new THREE.Raycaster();raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
+        function triggerWorldInteraction(type) {
+            const raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
 
-        const meshes=Array.from(chunkMeshes.values());const intersects=raycaster.intersectObjects(meshes,true);
+            const meshes = Array.from(chunkMeshes.values());
+            const intersects = raycaster.intersectObjects(meshes, true);
 
-        if(intersects.length>0&&intersects[0].distance<6){const hit=intersects[0];const point=hit.point;const normal=hit.face.normal;
+            if (intersects.length > 0 && intersects[0].distance < 6) {
+                const hit = intersects[0];
+                const point = hit.point;
+                const normal = hit.face.normal;
 
-        if(type==='break'){const bx=Math.round(point.x-normal.x*0.4);const by=Math.round(point.y-normal.y*0.4);const bz=Math.round(point.z-normal.z*0.4);
+                if (type === 'break') {
+                    const bx = Math.round(point.x - normal.x * 0.4);
+                    const by = Math.round(point.y - normal.y * 0.4);
+                    const bz = Math.round(point.z - normal.z * 0.4);
 
-        const targetBlock=getBlock(bx,by,bz);if(targetBlock&&targetBlock!=='water'){worldBlocks.delete(`${bx},${by},${bz}`);audio.playMiningSound();updateAffectedChunks(bx,bz);}}else if(type==='place'){const px=Math.round(point.x+normal.x*0.4);const py=Math.round(point.y+normal.y*0.4);const pz=Math.round(point.z+normal.z*0.4);
+                    const targetBlock = getBlock(bx, by, bz);
+                    if (targetBlock && targetBlock !== 'water') {
+                        worldBlocks.delete(`${bx},${by},${bz}`);
+                        audio.playMiningSound();
+                        updateAffectedChunks(bx, bz);
+                    }
+                } else if (type === 'place') {
+                    const px = Math.round(point.x + normal.x * 0.4);
+                    const py = Math.round(point.y + normal.y * 0.4);
+                    const pz = Math.round(point.z + normal.z * 0.4);
 
-        const pDist=player.pos.distanceTo(new THREE.Vector3(px,py,pz));if(pDist>0.8){const targetBlock=getBlock(px,py,pz);if(!targetBlock||targetBlock==='water'){const placingType=insideGrayBiome?'grayGrass':'grass';setBlock(px,py,pz,placingType);audio.playPlaceSound();updateAffectedChunks(px,pz);}}}}
-    }
+                    const pDist = player.pos.distanceTo(new THREE.Vector3(px, py, pz));
+                    if (pDist > 0.8) {
+                        const targetBlock = getBlock(px, py, pz);
+                        if (!targetBlock || targetBlock === 'water') {
+                            const placingType = insideGrayBiome ? 'grayGrass' : 'grass';
+                            setBlock(px, py, pz, placingType);
+                            audio.playPlaceSound();
+                            updateAffectedChunks(px, pz);
+                        }
+                    }
+                }
+            }
+        }
 
-    // MOBİL DOKUNMATİK MOTORU (Sanal Joystick ve Buton Entegrasyonu)
-    function initMobileControls() {
-        const joystick=document.getElementById('mobile-joystick');const thumb=document.getElementById('mobile-joystick-thumb');const jumpBtn=document.getElementById('btn-mobile-jump');const sprintBtn=document.getElementById('btn-mobile-sprint');const placeBtn=document.getElementById('btn-mobile-place');const breakBtn=document.getElementById('btn-mobile-break');
+        // MOBİL DOKUNMATİK MOTORU (Sanal Joystick ve Buton Entegrasyonu)
+        function initMobileControls() {
+            const joystick = document.getElementById('mobile-joystick');
+            const thumb = document.getElementById('mobile-joystick-thumb');
+            const jumpBtn = document.getElementById('btn-mobile-jump');
+            const sprintBtn = document.getElementById('btn-mobile-sprint');
+            const placeBtn = document.getElementById('btn-mobile-place');
+            const breakBtn = document.getElementById('btn-mobile-break');
 
-        let joystickActive=false;let joyStart={x:0,y:0};
+            if (!joystick || !thumb || !jumpBtn || !sprintBtn || !placeBtn || !breakBtn) return;
 
-        // Sanal Joystick Touch Olayları
-        joystick.addEventListener('touchstart',(e)=>{e.preventDefault();joystickActive=true;const t=e.touches[0];const rect=joystick.getBoundingClientRect();joyStart={x:rect.left+rect.width/2,y:rect.top+rect.height/2};},{passive:false});
+            let joystickActive = false;
+            let joyStart = { x: 0, y: 0 };
 
-        document.addEventListener('touchmove',(e)=>{if(!joystickActive)return;
+            // Sanal Joystick Touch Olayları
+            joystick.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                joystickActive = true;
+                const t = e.touches[0];
+                const rect = joystick.getBoundingClientRect();
+                joyStart = {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2
+                };
+            }, { passive: false });
 
-        let activeTouch=null;for(let i=0;i<e.touches.length;i++){const t=e.touches[i];
-        // Joystick alanının sol tarafındaki touch'ı bul
-        if(t.clientX<window.innerWidth/2){activeTouch=t;break;}}if(!activeTouch)return;
+            document.addEventListener('touchmove', (e) => {
+                if (!joystickActive) return;
+                
+                let activeTouch = null;
+                for (let i = 0; i < e.touches.length; i++) {
+                    const t = e.touches[i];
+                    // Joystick alanının sol tarafındaki touch'ı bul
+                    if (t.clientX < window.innerWidth / 2) {
+                        activeTouch = t;
+                        break;
+                    }
+                }
+                if (!activeTouch) return;
 
-        const dx=activeTouch.clientX-joyStart.x;const dy=activeTouch.clientY-joyStart.y;const dist=Math.sqrt(dx*dx+dy*dy);const maxDist=45; // Joystick
-                                                                                                                                            // sınırı
+                const dx = activeTouch.clientX - joyStart.x;
+                const dy = activeTouch.clientY - joyStart.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const maxDist = 45; // Joystick sınırı
 
-        let angle=Math.atan2(dy,dx);let rx=dx;let ry=dy;
+                let angle = Math.atan2(dy, dx);
+                let rx = dx;
+                let ry = dy;
 
-        if(dist>maxDist){rx=Math.cos(angle)*maxDist;ry=Math.sin(angle)*maxDist;}
+                if (dist > maxDist) {
+                    rx = Math.cos(angle) * maxDist;
+                    ry = Math.sin(angle) * maxDist;
+                }
 
-        thumb.style.transform=`translate(${rx}px,${ry}px)`;
+                thumb.style.transform = `translate(${rx}px, ${ry}px)`;
 
-        // Kuvvetleri normalleştir (0 ile 1 aralığında yön eşlemesi)
-        const forceX=rx/maxDist;const forceY=ry/maxDist;
+                // Yönlendirme kuvvet tespiti
+                const forceX = rx / maxDist;
+                const forceY = ry / maxDist;
 
-        mobileKeys.forward=forceY<-0.15?Math.abs(forceY):0;mobileKeys.backward=forceY>0.15?forceY:0;mobileKeys.left=forceX<-0.15?Math.abs(forceX):0;mobileKeys.right=forceX>0.15?forceX:0;},{passive:true});
+                mobileKeys.forward = forceY < -0.15 ? Math.abs(forceY) : 0;
+                mobileKeys.backward = forceY > 0.15 ? forceY : 0;
+                mobileKeys.left = forceX < -0.15 ? Math.abs(forceX) : 0;
+                mobileKeys.right = forceX > 0.15 ? forceX : 0;
+            }, { passive: true });
 
-        const resetJoystick=()=>{joystickActive=false;thumb.style.transform='translate(0px, 0px)';mobileKeys.forward=0;mobileKeys.backward=0;mobileKeys.left=0;mobileKeys.right=0;};
+            const resetJoystick = () => {
+                joystickActive = false;
+                thumb.style.transform = 'translate(0px, 0px)';
+                mobileKeys.forward = 0;
+                mobileKeys.backward = 0;
+                mobileKeys.left = 0;
+                mobileKeys.right = 0;
+            };
 
-        joystick.addEventListener('touchend',resetJoystick);joystick.addEventListener('touchcancel',resetJoystick);
+            joystick.addEventListener('touchend', resetJoystick);
+            joystick.addEventListener('touchcancel', resetJoystick);
 
-        // Zıplama Butonu Touch Olayları (Basılı tutma yüzmeyi tetikler)
-        jumpBtn.addEventListener('touchstart',(e)=>{e.preventDefault();mobileKeys.jump=true;},{passive:false});
+            // Zıplama Butonu Touch Olayları
+            jumpBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileKeys.jump = true;
+            }, { passive: false });
+            
+            jumpBtn.addEventListener('touchend', () => { mobileKeys.jump = false; });
+            jumpBtn.addEventListener('touchcancel', () => { mobileKeys.jump = false; });
 
-        jumpBtn.addEventListener('touchend',()=>{mobileKeys.jump=false;});jumpBtn.addEventListener('touchcancel',()=>{mobileKeys.jump=false;});
+            // Koşma Butonu Touch Olayları
+            sprintBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                mobileKeys.sprint = true;
+            }, { passive: false });
+            
+            sprintBtn.addEventListener('touchend', () => { mobileKeys.sprint = false; });
+            sprintBtn.addEventListener('touchcancel', () => { mobileKeys.sprint = false; });
 
-        // Koşma Butonu Touch Olayları
-        sprintBtn.addEventListener('touchstart',(e)=>{e.preventDefault();mobileKeys.sprint=true;},{passive:false});
+            // Blok Koyma ve Kırma Mobil Etkileşimleri
+            placeBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerWorldInteraction('place');
+            }, { passive: false });
 
-        sprintBtn.addEventListener('touchend',()=>{mobileKeys.sprint=false;});sprintBtn.addEventListener('touchcancel',()=>{mobileKeys.sprint=false;});
+            breakBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                triggerWorldInteraction('break');
+            }, { passive: false });
 
-        // Blok Koyma ve Kırma Mobil Etkileşimleri
-        placeBtn.addEventListener('touchstart',(e)=>{e.preventDefault();triggerWorldInteraction('place');},{passive:false});
+            // Ekranın Sağ Tarafında Kamera Döndürme (Swipe To Look)
+            document.addEventListener('touchstart', (e) => {
+                if (!gameActive || isPaused) return;
+                for (let i = 0; i < e.touches.length; i++) {
+                    const t = e.touches[i];
+                    if (t.clientX > window.innerWidth / 2 && !lookTouchId) {
+                        const targetTag = t.target.tagName;
+                        if (targetTag !== 'BUTTON') {
+                            lookTouchId = t.identifier;
+                            lookStart = { x: t.clientX, y: t.clientY };
+                        }
+                    }
+                }
+            }, { passive: true });
 
-        breakBtn.addEventListener('touchstart',(e)=>{e.preventDefault();triggerWorldInteraction('break');},{passive:false});
+            document.addEventListener('touchmove', (e) => {
+                if (!gameActive || isPaused || !lookTouchId) return;
+                for (let i = 0; i < e.touches.length; i++) {
+                    const t = e.touches[i];
+                    if (t.identifier === lookTouchId) {
+                        const dx = t.clientX - lookStart.x;
+                        const dy = t.clientY - lookStart.y;
 
-        // Ekranın Sağ Tarafında Kamera Döndürme (Swipe To Look)
-        document.addEventListener('touchstart',(e)=>{if(!gameActive||isPaused)return;for(let i=0;i<e.touches.length;i++){const t=e.touches[i];
-        // Sağ taraftaki boşluklardan dokunulduysa ve arayüz butonu değilse lookTouch
-        // yap
-        if(t.clientX>window.innerWidth/2&&!lookTouchId){const targetTag=t.target.tagName;if(targetTag!=='BUTTON'){lookTouchId=t.identifier;lookStart={x:t.clientX,y:t.clientY};}}}},{passive:true});
+                        camera.rotation.y -= dx * 0.005;
+                        camera.rotation.x -= dy * 0.005;
+                        camera.rotation.x = Math.max(-Math.PI / 2.1, Math.min(Math.PI / 2.1, camera.rotation.x));
 
-        document.addEventListener('touchmove',(e)=>{if(!gameActive||isPaused||!lookTouchId)return;for(let i=0;i<e.touches.length;i++){const t=e.touches[i];if(t.identifier===lookTouchId){const dx=t.clientX-lookStart.x;const dy=t.clientY-lookStart.y;
+                        lookStart = { x: t.clientX, y: t.clientY };
+                    }
+                }
+            }, { passive: true });
 
-        camera.rotation.y-=dx*0.005;camera.rotation.x-=dy*0.005;camera.rotation.x=Math.max(-Math.PI/2.1,Math.min(Math.PI/2.1,camera.rotation.x));
+            const stopLookSwipe = (e) => {
+                if (!lookTouchId) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === lookTouchId) {
+                        lookTouchId = null;
+                    }
+                }
+            };
 
-        lookStart={x:t.clientX,y:t.clientY};}}},{passive:true});
+            document.addEventListener('touchend', stopLookSwipe);
+            document.addEventListener('touchcancel', stopLookSwipe);
+        }
 
-        const stopLookSwipe=(e)=>{if(!lookTouchId)return;for(let i=0;i<e.changedTouches.length;i++){if(e.changedTouches[i].identifier===lookTouchId){lookTouchId=null;}}};
+        function updateAffectedChunks(bx, bz) {
+            const cx = Math.floor(bx / CHUNK_SIZE);
+            const cz = Math.floor(bz / CHUNK_SIZE);
+            
+            rebuildChunk(cx, cz);
+            
+            if ((bx % CHUNK_SIZE) === 0) rebuildChunk(cx - 1, cz);
+            if ((bx % CHUNK_SIZE) === CHUNK_SIZE - 1) rebuildChunk(cx + 1, cz);
+            if ((bz % CHUNK_SIZE) === 0) rebuildChunk(cx, cz - 1);
+            if ((bz % CHUNK_SIZE) === CHUNK_SIZE - 1) rebuildChunk(cx, cz + 1);
+        }
 
-        document.addEventListener('touchend',stopLookSwipe);document.addEventListener('touchcancel',stopLookSwipe);
-    }
+        function onWindowResize() {
+            if (!gameActive || !renderer) return;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        window.addEventListener('resize', onWindowResize);
 
-    function updateAffectedChunks(bx,bz) {
-        const cx=Math.floor(bx/CHUNK_SIZE);const cz=Math.floor(bz/CHUNK_SIZE);
+        const scaryMessages = [
+            "HATA: İLK BİYOM!",
+            "SEN SEN ???",
+            "HUKA İS BACKKKK!!",
+            "HORRRRRRRRRRR MİNİ!",
+            "KORKU MİNİ PRE-ALPHA 0.05",
+            "YENGEÇ FAVORİTE!"
+        ];
+        let messageIndex = 0;
+        let glitchInterval = null;
 
-        rebuildChunk(cx,cz);
+        function startScaryGlitches() {
+            if(glitchInterval) return;
+            const overlay = document.getElementById('scary-overlay');
+            const scaryText = document.getElementById('scary-text');
+            if (overlay && scaryText) {
+                overlay.classList.remove('hidden');
+            }
 
-        if((bx%CHUNK_SIZE)===0)rebuildChunk(cx-1,cz);if((bx%CHUNK_SIZE)===CHUNK_SIZE-1)rebuildChunk(cx+1,cz);if((bz%CHUNK_SIZE)===0)rebuildChunk(cx,cz-1);if((bz%CHUNK_SIZE)===CHUNK_SIZE-1)rebuildChunk(cx,cz+1);
-    }
+            glitchInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % scaryMessages.length;
+                if (scaryText) {
+                    scaryText.innerText = scaryMessages[messageIndex];
+                }
+                if (overlay) {
+                    overlay.style.backgroundColor = `rgba(150, 0, 0, ${Math.random() * 0.4 + 0.2})`;
+                }
+                audio.playBeep(60 + Math.random() * 40, 'sawtooth', 0.25, 0.2);
+            }, 1000);
+        }
 
-    function onWindowResize() {
-        if (!gameActive || !renderer)
-            return;
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }window.addEventListener('resize',onWindowResize);
+        function stopScaryGlitches() {
+            if(!glitchInterval) return;
+            clearInterval(glitchInterval);
+            glitchInterval = null;
+            const overlay = document.getElementById('scary-overlay');
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
+        }
 
-    const scaryMessages=["HATA: İLK BİYOM!","SEN SEN ???","HUKA İS BACKKKK!!","HORRRRRRRRRRR MİNİ!","KORKU MİNİ PRE-ALPHA 0.05","YENGEÇ FAVORİTE!"];
-
-    let messageIndex = 0;
-    let glitchInterval = null;
-
-    function startScaryGlitches() {
-        if(glitchInterval)return;const overlay=document.getElementById('scary-overlay');const scaryText=document.getElementById('scary-text');if(overlay&&scaryText){overlay.classList.remove('hidden');}
-
-        glitchInterval=setInterval(()=>{messageIndex=(messageIndex+1)%scaryMessages.length;if(scaryText){scaryText.innerText=scaryMessages[messageIndex];}if(overlay){overlay.style.backgroundColor=`rgba(150,0,0,${Math.random()*0.4+0.2})`;}audio.playBeep(60+Math.random()*40,'sawtooth',0.25,0.2);},1000);
-    }
-
-    function stopScaryGlitches() {
-        if(!glitchInterval)return;clearInterval(glitchInterval);glitchInterval=null;const overlay=document.getElementById('scary-overlay');if(overlay){overlay.classList.add('hidden');}
-    }
-
-    setInterval(() => {
+        setInterval(() => {
             if(gameActive && !isPaused && insideGrayBiome) {
                 audio.playScaryHum();
                 if(Math.random() < 0.5) {
@@ -608,59 +1331,171 @@ class SoundSynth {
             }
         }, 4000);
 
-    function animate() {
-        if(!gameActive)return;animationFrameId=requestAnimationFrame(animate);
+        function animate() {
+            if (!gameActive) return;
+            animationFrameId = requestAnimationFrame(animate);
 
-        updatePhysics();
+            updatePhysics();
 
-        frames++;const now=performance.now();if(now>=lastTime+1000){currentFps=Math.round((frames*1000)/(now-lastTime));const fpsEl=document.getElementById('gpu-fps');if(fpsEl){fpsEl.innerText=currentFps;}frames=0;lastTime=now;}
+            frames++;
+            const now = performance.now();
+            if (now >= lastTime + 1000) {
+                currentFps = Math.round((frames * 1000) / (now - lastTime));
+                const fpsEl = document.getElementById('gpu-fps');
+                if (fpsEl) {
+                    fpsEl.innerText = currentFps;
+                }
+                frames = 0;
+                lastTime = now;
+            }
 
-        const px=Math.floor(player.pos.x/CHUNK_SIZE);const pz=Math.floor(player.pos.z/CHUNK_SIZE);
+            const px = Math.floor(player.pos.x / CHUNK_SIZE);
+            const pz = Math.floor(player.pos.z / CHUNK_SIZE);
 
-        // Güvenli DOM Koruması
-        const coordsEl=document.getElementById('ui-coords');if(coordsEl){coordsEl.innerText=`X:${Math.round(player.pos.x)}|Y:${Math.round(player.pos.y)}|Z:${Math.round(player.pos.z)}`;}
+            // Güvenli DOM Koruması
+            const coordsEl = document.getElementById('ui-coords');
+            if (coordsEl) {
+                coordsEl.innerText = `X: ${Math.round(player.pos.x)} | Y: ${Math.round(player.pos.y)} | Z: ${Math.round(player.pos.z)}`;
+            }
 
-        // Oyuncunun Gri Korku Biyomunda Olup Olmadığının Tespiti
-        const isPlayerInGrayBiome=(player.pos.x>=BIOME_MIN_X&&player.pos.x<=BIOME_MAX_X&&player.pos.z>=BIOME_MIN_Z&&player.pos.z<=BIOME_MAX_Z);
+            // Oyuncunun Gri Korku Biyomunda Olup Olmadığının Tespiti
+            const isPlayerInGrayBiome = (player.pos.x >= BIOME_MIN_X && player.pos.x <= BIOME_MAX_X && player.pos.z >= BIOME_MIN_Z && player.pos.z <= BIOME_MAX_Z);
+            
+            // Yumuşak Işık/Karanlık Geçiş Hedefleri
+            let targetFogColor = 0x8a9ba8;
+            let targetFogDensity = 0.025;
+            let targetAmbientIntensity = 0.75;
+            let targetSunIntensity = 1.2;
 
-        // Yumuşak Işık/Karanlık Geçiş Hedefleri
-        let targetFogColor=0x8a9ba8;let targetFogDensity=0.025;let targetAmbientIntensity=0.75;let targetSunIntensity=1.2;
+            if (isPlayerInGrayBiome && !isPaused) {
+                targetFogColor = 0x030101; 
+                targetFogDensity = 0.12;  
+                targetAmbientIntensity = 0.02; 
+                targetSunIntensity = 0.02; 
 
-        if(isPlayerInGrayBiome&&!isPaused){targetFogColor=0x030101;targetFogDensity=0.12;targetAmbientIntensity=0.02;targetSunIntensity=0.02;
+                if (!insideGrayBiome) {
+                    insideGrayBiome = true;
+                    const biomeEl = document.getElementById('ui-biome');
+                    if (biomeEl) {
+                        biomeEl.innerText = "HUKA'S GRAY LANDS";
+                        biomeEl.className = "text-red-600 font-black glitch-text";
+                    }
+                    startScaryGlitches();
+                }
+            } else {
+                if (insideGrayBiome) {
+                    insideGrayBiome = false;
+                    const biomeEl = document.getElementById('ui-biome');
+                    if (biomeEl) {
+                        biomeEl.innerText = "Sakin Orman";
+                        biomeEl.className = "text-green-400 font-bold";
+                    }
+                    stopScaryGlitches();
+                }
+            }
 
-        if(!insideGrayBiome){insideGrayBiome=true;const biomeEl=document.getElementById('ui-biome');if(biomeEl){biomeEl.innerText="HUKA'S GRAY LANDS";biomeEl.className="text-red-600 font-black glitch-text";}startScaryGlitches();}}else{if(insideGrayBiome){insideGrayBiome=false;const biomeEl=document.getElementById('ui-biome');if(biomeEl){biomeEl.innerText="Sakin Orman";biomeEl.className="text-green-400 font-bold";}stopScaryGlitches();}}
+            // Işık ve Sis Değerlerinin Yumuşak Geçişi
+            scene.fog.color.lerp(new THREE.Color(targetFogColor), 0.05);
+            scene.fog.density += (targetFogDensity - scene.fog.density) * 0.05;
+            ambientLight.intensity += (targetAmbientIntensity - ambientLight.intensity) * 0.05;
+            sunLight.intensity += (targetSunIntensity - sunLight.intensity) * 0.05;
+            renderer.setClearColor(scene.fog.color);
 
-        // Işık ve Sis Değerlerinin Yumuşak Geçişi
-        scene.fog.color.lerp(new THREE.Color(targetFogColor),0.05);scene.fog.density+=(targetFogDensity-scene.fog.density)*0.05;ambientLight.intensity+=(targetAmbientIntensity-ambientLight.intensity)*0.05;sunLight.intensity+=(targetSunIntensity-sunLight.intensity)*0.05;renderer.setClearColor(scene.fog.color);
+            // Bizi İzleyen Varlığın Kameraya/Oyuncuya Kilitlenmesi
+            if (creepyObserver) {
+                const targetPos = new THREE.Vector3(player.pos.x, creepyObserver.position.y, player.pos.z);
+                creepyObserver.lookAt(targetPos);
 
-        // Bizi İzleyen Varlığın Kameraya/Oyuncuya Kilitlenmesi
-        if(creepyObserver){const targetPos=new THREE.Vector3(player.pos.x,creepyObserver.position.y,player.pos.z);creepyObserver.lookAt(targetPos);
+                const distanceToObserver = player.pos.distanceTo(creepyObserver.position);
+                if (distanceToObserver < 6.5 && insideGrayBiome && !isPaused) {
+                    const timeNow = performance.now();
+                    if (timeNow - lastScreamTime > 3500) { 
+                        audio.playScream(2); 
+                        lastScreamTime = timeNow;
+                    }
+                    const scaryOverlay = document.getElementById('scary-overlay');
+                    if (scaryOverlay) {
+                        scaryOverlay.style.backgroundColor = `rgba(${120 + Math.random() * 135}, 0, 0, ${Math.random() * 0.6 + 0.3})`;
+                    }
+                }
+            }
 
-        const distanceToObserver=player.pos.distanceTo(creepyObserver.position);if(distanceToObserver<6.5&&insideGrayBiome&&!isPaused){const timeNow=performance.now();if(timeNow-lastScreamTime>3500){audio.playScream(2);lastScreamTime=timeNow;}const scaryOverlay=document.getElementById('scary-overlay');if(scaryOverlay){scaryOverlay.style.backgroundColor=`rgba(${120+Math.random()*135},0,0,${Math.random()*0.6+0.3})`;}}}
+            // Gri Biyomdaki Ağaçların Yavaşça Yerin Altına Batıp Kaybolması
+            grayBiomeTrees.forEach(tree => {
+                if (insideGrayBiome && !isPaused) {
+                    if (tree.obj.position.y > tree.targetY - 7) {
+                        tree.obj.position.y -= 0.04; 
+                        tree.obj.scale.setScalar(Math.max(0.01, tree.obj.scale.x - 0.005)); 
+                    } else if (!tree.isSunk) {
+                        tree.isSunk = true;
+                        scene.remove(tree.obj); 
+                    }
+                } else if (!insideGrayBiome && !isPaused) {
+                    if (tree.obj.position.y < tree.startY) {
+                        if(tree.isSunk) {
+                            scene.add(tree.obj);
+                            tree.isSunk = false;
+                        }
+                        tree.obj.position.y += 0.08;
+                        tree.obj.scale.setScalar(Math.min(1.0, tree.obj.scale.x + 0.01));
+                    }
+                }
+            });
 
-        // Gri Biyomdaki Ağaçların Yavaşça Yerin Altına Batıp Kaybolması
-        grayBiomeTrees.forEach(tree=>{if(insideGrayBiome&&!isPaused){if(tree.obj.position.y>tree.targetY-7){tree.obj.position.y-=0.04;tree.obj.scale.setScalar(Math.max(0.01,tree.obj.scale.x-0.005));}else if(!tree.isSunk){tree.isSunk=true;scene.remove(tree.obj);}}else if(!insideGrayBiome&&!isPaused){if(tree.obj.position.y<tree.startY){if(tree.isSunk){scene.add(tree.obj);tree.isSunk=false;}tree.obj.position.y+=0.08;tree.obj.scale.setScalar(Math.min(1.0,tree.obj.scale.x+0.01));}}});
+            // Uyku Modundaki Chunkların Tespiti
+            let sleepingCount = 0;
+            const totalChunkCount = chunkMeshes.size;
 
-        // Uyku Modundaki Chunkların Tespiti
-        let sleepingCount=0;const totalChunkCount=chunkMeshes.size;
+            const camDirection = new THREE.Vector3();
+            camera.getWorldDirection(camDirection);
 
-        const camDirection=new THREE.Vector3();camera.getWorldDirection(camDirection);
+            chunkMeshes.forEach((meshGroup, key) => {
+                const parts = key.split(',');
+                const cx = parseInt(parts[0]);
+                const cz = parseInt(parts[1]);
+                
+                const chunkCenterX = (cx * CHUNK_SIZE) + (CHUNK_SIZE / 2);
+                const chunkCenterZ = (cz * CHUNK_SIZE) + (CHUNK_SIZE / 2);
+                const chunkCenter = new THREE.Vector3(chunkCenterX, player.pos.y, chunkCenterZ);
 
-        chunkMeshes.forEach((meshGroup,key)=>{const parts=key.split(',');const cx=parseInt(parts[0]);const cz=parseInt(parts[1]);
+                const toChunk = new THREE.Vector3().subVectors(chunkCenter, player.pos);
+                const dist = toChunk.length();
+                toChunk.normalize();
 
-        const chunkCenterX=(cx*CHUNK_SIZE)+(CHUNK_SIZE/2);const chunkCenterZ=(cz*CHUNK_SIZE)+(CHUNK_SIZE/2);const chunkCenter=new THREE.Vector3(chunkCenterX,player.pos.y,chunkCenterZ);
+                const dot = camDirection.dot(toChunk);
 
-        const toChunk=new THREE.Vector3().subVectors(chunkCenter,player.pos);const dist=toChunk.length();toChunk.normalize();
+                if (dist > 18 && dot < 0.15) {
+                    meshGroup.visible = false; 
+                    sleepingCount++;
+                } else {
+                    meshGroup.visible = true; 
+                }
+            });
 
-        const dot=camDirection.dot(toChunk);
+            // Güvenli Takipçi DOM Atamaları
+            const sleepingEl = document.getElementById('gpu-sleeping');
+            if (sleepingEl) {
+                sleepingEl.innerText = sleepingCount;
+            }
+            const totalChunksEl = document.getElementById('gpu-total-chunks');
+            if (totalChunksEl) {
+                totalChunksEl.innerText = totalChunkCount;
+            }
 
-        if(dist>18&&dot<0.15){meshGroup.visible=false;sleepingCount++;}else{meshGroup.visible=true;}});
+            if (!isPaused) {
+                for (let x = px - VIEW_DISTANCE; x <= px + VIEW_DISTANCE; x++) {
+                    for (let z = pz - VIEW_DISTANCE; z <= pz + VIEW_DISTANCE; z++) {
+                        createChunk(x, z);
+                    }
+                }
+            }
 
-        // Güvenli Takipçi DOM Atamaları
-        const sleepingEl=document.getElementById('gpu-sleeping');if(sleepingEl){sleepingEl.innerText=sleepingCount;}const totalChunksEl=document.getElementById('gpu-total-chunks');if(totalChunksEl){totalChunksEl.innerText=totalChunkCount;}
-
-        if(!isPaused){for(let x=px-VIEW_DISTANCE;x<=px+VIEW_DISTANCE;x++){for(let z=pz-VIEW_DISTANCE;z<=pz+VIEW_DISTANCE;z++){createChunk(x,z);}}}
-
-        const loadEl=document.getElementById('gpu-load');if(loadEl){loadEl.innerText=Math.min(100,Math.round((renderer.info.render.calls/14)))+"%";}renderer.render(scene,camera);
-}</script></body></html
->
+            const loadEl = document.getElementById('gpu-load');
+            if (loadEl) {
+                loadEl.innerText = Math.min(100, Math.round((renderer.info.render.calls / 14))) + "%";
+            }
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
